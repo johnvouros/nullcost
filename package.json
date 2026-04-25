@@ -1,0 +1,42 @@
+{
+  "name": "nullcost",
+  "version": "0.1.0",
+  "description": "Find developer tools with real free tiers and trials from the Nullcost catalog.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "supabase:start": "npx supabase start",
+    "supabase:stop": "npx supabase stop",
+    "supabase:reset": "npx supabase db reset",
+    "db:seed": "python3 ./scripts/import_providers_to_supabase.py",
+    "mcp:serve": "node ./mcp/render-probe-server.mjs",
+    "mcp:catalog": "node ./mcp/referiate-provider-server.mjs",
+    "probe": "node ./scripts/probe-client.mjs",
+    "smoke": "node ./scripts/smoke-checks.mjs",
+    "version:check": "node ./scripts/check-version.mjs"
+  },
+  "keywords": [],
+  "author": "Nullcost",
+  "license": "Apache-2.0",
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@supabase/ssr": "^0.10.2",
+    "@supabase/supabase-js": "^2.58.0",
+    "next": "^16.2.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "yaml": "^2.8.3"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^16.2.4",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "enabledPlugins": {
+    "nullcost-catalog@nullcost-local": true
+  },
+  "extraKnownMarketplaces": {
+    "nullcost-local": {
+      "source": {
+        "source": "directory",
+        "path": "/mnt/storage/referiate"
+      }
+    }
+  }
+}

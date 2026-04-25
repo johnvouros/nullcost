@@ -1,0 +1,40 @@
+{
+  "name": "nullcost-catalog",
+  "version": "0.1.0",
+  "description": "Find cheap, free-tier, and best-value developer services from the local Nullcost catalog.",
+  "author": {
+    "name": "Nullcost"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "providers",
+    "catalog",
+    "mcp",
+    "pricing",
+    "developer-tools"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Nullcost",
+    "shortDescription": "Cheap and best-value developer service finder",
+    "longDescription": "Use Nullcost when someone asks plain-English questions like what is a cheap auth service, which hosting has a real free tier, which email API is cheapest, or what is the best value Postgres for a coding stack. For v1, answer from the shared Nullcost catalog database only and do not browse or verify live pricing pages. Do not use it for domain availability, registrar pricing, TLD comparisons, or exact domain registration checks.",
+    "developerName": "Nullcost",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read"
+    ],
+    "defaultPrompt": [
+      "What is a cheap hosting service for a small SaaS?",
+      "Best value auth service with a real free tier",
+      "Show free-tier Postgres and transactional email options",
+      "What is a cheap email API for a solo project?",
+      "Which hosting stays cheap without surprise SSR costs?"
+    ],
+    "composerIcon": "./assets/nullcost-small.svg",
+    "logo": "./assets/nullcost-logo.png",
+    "brandColor": "#232F3E",
+    "screenshots": []
+  }
+}

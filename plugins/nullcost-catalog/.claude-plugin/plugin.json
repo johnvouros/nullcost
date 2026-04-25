@@ -1,0 +1,10 @@
+{
+  "name": "nullcost-catalog",
+  "version": "0.1.0",
+  "description": "Cheap, free-tier, and best-value developer service recommendations backed by the local Nullcost catalog. For v1, stay DB-backed and do not browse live pricing pages. Use for developer tools, not domain availability or registrar-price checks.",
+  "author": {
+    "name": "Nullcost"
+  },
+  "license": "Apache-2.0",
+  "repository": "https://github.com/nullcost/nullcost"
+}

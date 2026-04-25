@@ -1,0 +1,22 @@
+{
+  "mcpServers": {
+    "nullcost-render-probe": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/mnt/storage/referiate/mcp/render-probe-server.mjs"
+      ],
+      "env": {}
+    },
+    "nullcost-provider-catalog": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/mnt/storage/referiate/mcp/referiate-provider-server.mjs"
+      ],
+      "env": {
+        "REFERIATE_API_BASE_URL": "http://127.0.0.1:3000"
+      }
+    }
+  }
+}

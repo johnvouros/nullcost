@@ -1,0 +1,13 @@
+.env.local
+.env
+.env.*.local
+.next
+.netlify
+.playwright-cli
+node_modules
+__pycache__
+*.pyc
+progress.md
+backups/
+supabase/.branches
+supabase/.temp

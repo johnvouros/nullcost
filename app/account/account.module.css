@@ -1,0 +1,133 @@
+.shell {
+  width: min(980px, calc(100% - 24px));
+  margin: 72px auto 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.panel {
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  background: #0d0d0d;
+}
+
+.kicker,
+.metaLabel,
+.hint,
+.listLabel {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  text-transform: uppercase;
+}
+
+.kicker {
+  margin: 0;
+  color: #7f8a99;
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+}
+
+.panel h1,
+.panel h2 {
+  margin: 8px 0 0;
+  color: #eef4fb;
+  letter-spacing: -0.05em;
+}
+
+.panel h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.summary {
+  margin: 12px 0 0;
+  color: #9aa6b4;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  max-width: 48ch;
+}
+
+.metaGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  margin-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.045);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.metaCell {
+  display: grid;
+  gap: 6px;
+  min-height: 54px;
+  padding: 8px 10px;
+  border-right: 1px solid rgba(255, 255, 255, 0.045);
+}
+
+.metaCell:last-child {
+  border-right: 0;
+}
+
+.metaLabel {
+  color: #7f8a99;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+}
+
+.metaValue {
+  color: #eef4fb;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.cardGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.listRow {
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.045);
+  background: #111111;
+}
+
+.listLabel {
+  color: #7f8a99;
+  font-size: 0.62rem;
+  letter-spacing: 0.14em;
+}
+
+.hint {
+  margin-top: 12px;
+  color: #6f7d8d;
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+}
+
+@media (max-width: 960px) {
+  .shell {
+    margin-top: 64px;
+  }
+
+  .metaGrid,
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metaCell {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.045);
+  }
+
+  .metaCell:last-child {
+    border-bottom: 0;
+  }
+}

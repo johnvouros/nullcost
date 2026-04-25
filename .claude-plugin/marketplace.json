@@ -1,0 +1,18 @@
+{
+  "name": "nullcost-local",
+  "owner": {
+    "name": "Nullcost"
+  },
+  "metadata": {
+    "description": "Local Nullcost marketplace for developer tool discovery and recommendation plugins."
+  },
+  "plugins": [
+    {
+      "name": "nullcost-catalog",
+      "description": "Search and recommend developer tooling providers from the local Nullcost catalog.",
+      "category": "development",
+      "source": "./plugins/nullcost-catalog",
+      "homepage": "http://127.0.0.1:3000/install"
+    }
+  ]
+}

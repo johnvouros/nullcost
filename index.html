@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nullcost Text Output Patterns</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+
+    <main class="workspace">
+      <header class="hero">
+        <div class="hero__copy">
+          <p class="eyebrow">Portable Text Patterns</p>
+          <h1>Compact result cards and single-row layouts for Codex-style tool output.</h1>
+          <p class="hero__summary">
+            These examples assume no custom GUI. Everything here is meant to work as plain text,
+            markdown code blocks, or terminal output with optional ANSI color on top.
+          </p>
+        </div>
+
+        <div class="hero__status">
+          <div class="status-pill">
+            <span class="status-pill__label">Constraint</span>
+            <span class="status-pill__value">Text first</span>
+          </div>
+          <div class="status-pill">
+            <span class="status-pill__label">Bias</span>
+            <span class="status-pill__value">Compact + easy to scan</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="gallery">
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern A</p>
+              <h2>Primary card with two fallback rows</h2>
+            </div>
+            <span class="pattern__tag">best default</span>
+          </div>
+          <p class="pattern__summary">
+            Strongest general-purpose format. One card for the winner, then one-line alternatives.
+          </p>
+          <pre class="terminal-block terminal-block--featured">╭─ Nullcost: hosting for public MCP ───────────────────────────────────────╮
+│ Best fit   Vercel Functions                                    score 92    │
+│ Why        Fastest deploy + strong custom domains                           │
+│ Price      Free to start                                                    │
+│ Referral   None used in ranking                                             │
+│ Actions    [o] official  [w] why rank  [a] alternatives                     │
+├──────────────────────────────────────────────────────────────────────────────┤
+│ 2 Render   fast setup · starter pricing visible · user discount available   │
+│ 3 Fly.io   more control · usage based pricing · credit referral only        │
+╰──────────────────────────────────────────────────────────────────────────────╯</pre>
+        </article>
+
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern B</p>
+              <h2>Single-row ranked list</h2>
+            </div>
+            <span class="pattern__tag">densest</span>
+          </div>
+          <p class="pattern__summary">
+            Best when the user asked for choices fast and you want everything on one screen.
+          </p>
+          <pre class="terminal-block">$ nullcost recommend hosting --use-case "public mcp service"
+
+1  Vercel     best fit     free to start   no referral impact   [o] [w]
+2  Render     alt          starter plan    user discount        [o] [d]
+3  Fly.io     budget ctrl  usage based     credits only         [o] [w]</pre>
+        </article>
+
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern C</p>
+              <h2>Stacked mini cards</h2>
+            </div>
+            <span class="pattern__tag">easy on the eye</span>
+          </div>
+          <p class="pattern__summary">
+            Best for chat logs and agent transcripts where rows can get visually slippery.
+          </p>
+          <pre class="terminal-block">┌─ 1 Vercel ─────────────────────────────────────────── best fit / score 92 ─┐
+│ free to start · fast deploy · custom domains · no referral bias            │
+│ [o] official  [w] why rank                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ 2 Render ───────────────────────────────────────────── alt / score 87 ────┐
+│ starter pricing visible · stable service model · user discount             │
+│ [o] official  [d] discount                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘
+┌─ 3 Fly.io ───────────────────────────────────────────── ctrl / score 81 ───┐
+│ usage based · more setup control · credits only                            │
+│ [o] official  [w] why rank                                                 │
+└─────────────────────────────────────────────────────────────────────────────┘</pre>
+        </article>
+
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern D</p>
+              <h2>Narrow 80-column-safe card</h2>
+            </div>
+            <span class="pattern__tag">portable</span>
+          </div>
+          <p class="pattern__summary">
+            Good fallback when width is tight and wrapping would kill readability.
+          </p>
+          <pre class="terminal-block">+------------------------------------------------------------------------+
+| Best fit: Vercel Functions                                score: 92    |
+| Price: free to start                                                 |
+| Why: fastest deploy, strong domain support                           |
+| Ref : none used in ranking                                           |
+| Alt : Render (visible starter pricing, optional discount)            |
+| Keys: [o] official  [d] discount  [w] why                            |
++------------------------------------------------------------------------+</pre>
+        </article>
+
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern E</p>
+              <h2>Decision packet with inline disclosure</h2>
+            </div>
+            <span class="pattern__tag">most defensible</span>
+          </div>
+          <p class="pattern__summary">
+            Best when trust matters and you want the ranking logic and referral rule visible.
+          </p>
+          <pre class="terminal-block terminal-block--muted">nullcost.recommend  hosting / public mcp / custom domain / cheap
+
+best_fit   Vercel
+why        fastest deploy path for this exact use case
+price      free to start
+alt_1      Render   starter pricing visible   discount available
+alt_2      Fly.io   more control               credits only
+
+disclosure ranking uses fit, setup friction, and public pricing first
+actions    [o] official [d] discount [w] why this rank</pre>
+        </article>
+
+        <article class="pattern">
+          <div class="pattern__header">
+            <div>
+              <p class="eyebrow">Pattern F</p>
+              <h2>Slash-command friendly compact card</h2>
+            </div>
+            <span class="pattern__tag">chat native</span>
+          </div>
+          <p class="pattern__summary">
+            Best for inline assistant replies where you want a single tidy block with clear actions.
+          </p>
+          <pre class="terminal-block">/tools hosting
+
+[best] Vercel Functions   free to start   no referral bias
+       fastest deploy for public MCP + custom domains
+
+[alt ] Render             starter plan    optional user discount
+[alt ] Fly.io             usage based     credit referral only
+
+/open official   /open discount   /why vercel</pre>
+        </article>
+      </section>
+
+      <section class="rules">
+        <article class="rule">
+          <span class="rule__index">1</span>
+          <div>
+            <h3>Keep the winner tall, alternatives flat</h3>
+            <p>The eye should land on one clear choice first, then sweep across short fallback rows.</p>
+          </div>
+        </article>
+        <article class="rule">
+          <span class="rule__index">2</span>
+          <div>
+            <h3>Use the same column order every time</h3>
+            <p>Provider, fit, price, referral, then actions. Do not make the user re-parse each block.</p>
+          </div>
+        </article>
+        <article class="rule">
+          <span class="rule__index">3</span>
+          <div>
+            <h3>Keep disclosure close to action</h3>
+            <p>If there is a discount link, say so near the action itself, not buried three screens later.</p>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
