@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 import { AuthPanel } from '@/components/auth-panel';
 import { getCurrentAccount } from '@/lib/auth/account';
+import { sanitizeInternalPath } from '@/lib/security/redirects';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -18,10 +19,7 @@ export default async function AuthPage({
   searchParams?: Promise<{ mode?: string; next?: string }> | { mode?: string; next?: string };
 }) {
   const resolvedSearchParams = searchParams ? await searchParams : {};
-  const nextPath =
-    resolvedSearchParams.next && resolvedSearchParams.next.startsWith('/')
-      ? resolvedSearchParams.next
-      : '/dashboard';
+  const nextPath = sanitizeInternalPath(resolvedSearchParams.next);
   const account = await getCurrentAccount();
 
   if (account) {

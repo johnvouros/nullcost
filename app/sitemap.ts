@@ -28,6 +28,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'weekly',
       priority: 0.7,
     },
+    {
+      url: absoluteUrl('/privacy'),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
+    {
+      url: absoluteUrl('/terms'),
+      changeFrequency: 'monthly',
+      priority: 0.3,
+    },
   ];
 
   const providerRoutes: MetadataRoute.Sitemap = providers.map((provider) => ({

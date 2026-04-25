@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { enforceAuthRateLimit, RateLimitError } from '@/lib/security/rate-limit';
+import { sanitizeInternalPath } from '@/lib/security/redirects';
+import { absoluteUrl } from '@/lib/site';
 import { createRouteSupabaseClient } from '@/lib/supabase/route';
 
 function compact(value: unknown) {
@@ -8,19 +10,13 @@ function compact(value: unknown) {
     .trim();
 }
 
-function sanitizeNextPath(value: unknown) {
-  const nextPath = compact(value);
-  return nextPath.startsWith('/') ? nextPath : '/dashboard';
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const email = compact(body?.email).toLowerCase();
     const password = compact(body?.password);
     const displayName = compact(body?.displayName);
-    const nextPath = sanitizeNextPath(body?.nextPath);
-    const emailRedirectTo = compact(body?.emailRedirectTo);
+    const nextPath = sanitizeInternalPath(body?.nextPath);
 
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required.' }, { status: 400 });
@@ -37,7 +33,7 @@ export async function POST(request: NextRequest) {
         data: {
           display_name: displayName || undefined,
         },
-        emailRedirectTo: emailRedirectTo || undefined,
+        emailRedirectTo: absoluteUrl('/auth'),
       },
     });
 

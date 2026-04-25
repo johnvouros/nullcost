@@ -30,12 +30,18 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid rgba(37, 206, 105, 0.22);
-  background: rgba(30, 170, 84, 0.08);
-  color: #9af0be;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 0.76rem;
-  letter-spacing: 0.08em;
+  overflow: hidden;
+}
+
+.brand span {
+  width: 38px;
+  height: 38px;
+  display: block;
+  border-radius: 7px;
+  background-image: url('/favicon.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 38px 38px;
 }
 
 .nav {

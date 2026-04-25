@@ -118,6 +118,138 @@
   font-size: 0.62rem;
 }
 
+.panelIntro {
+  margin: -8px 0 14px;
+  color: #8d939d;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+
+.panelIntro code {
+  color: #48df86;
+  font-family: var(--font-mono), monospace;
+}
+
+.checklistPanel {
+  background:
+    radial-gradient(circle at top right, rgba(37, 206, 105, 0.08), transparent 38%),
+    #0f1115;
+}
+
+.checklist {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: install-step;
+}
+
+.checklist li {
+  counter-increment: install-step;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #dbe3ec;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.checklist li::before {
+  content: counter(install-step);
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #25ce69;
+  color: #07100b;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.fallbackList {
+  display: grid;
+  gap: 10px;
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  counter-reset: fallback-step;
+}
+
+.fallbackList li {
+  counter-increment: fallback-step;
+  display: grid;
+  grid-template-columns: minmax(0, 0.72fr) minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.fallbackList li > div:first-child {
+  position: relative;
+  display: grid;
+  gap: 3px;
+  padding-left: 32px;
+}
+
+.fallbackList li > div:first-child::before {
+  content: counter(fallback-step);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: rgba(37, 206, 105, 0.1);
+  color: #4ee283;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.fallbackList strong {
+  color: #ffffff;
+  font-size: 0.86rem;
+}
+
+.fallbackList span {
+  color: #8d939d;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.fallbackCommand {
+  position: relative;
+}
+
+.fallbackCommand code {
+  display: block;
+  overflow-x: auto;
+  padding: 10px 40px 10px 12px;
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.38);
+  color: #48df86;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.74rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.fallbackCopyButton {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  transform: translateY(-50%);
+}
+
 .stepList {
   display: grid;
   gap: 14px;
@@ -248,7 +380,8 @@
 
 .iconCopyButton,
 .promptCopyButton,
-.overlayCopyButton {
+.overlayCopyButton,
+.fallbackCopyButton {
   display: inline-grid;
   place-items: center;
   width: 30px;
@@ -266,7 +399,8 @@
 
 .iconCopyButton:hover,
 .promptCopyButton:hover,
-.overlayCopyButton:hover {
+.overlayCopyButton:hover,
+.fallbackCopyButton:hover {
   border-color: rgba(255, 255, 255, 0.14);
   background: #20242d;
   color: #ffffff;
@@ -584,6 +718,10 @@
   .stepShell {
     padding: 14px;
     gap: 12px;
+  }
+
+  .fallbackList li {
+    grid-template-columns: 1fr;
   }
 
   .commandWrap code,

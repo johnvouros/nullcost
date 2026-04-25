@@ -374,7 +374,7 @@ export function ProviderProfileShell({
 
           <div className={styles.linkList}>
             {quickLinks.map((link) => (
-              <a key={link.url} href={link.url} target="_blank" rel="noreferrer" className={styles.linkItem}>
+              <a key={link.url} href={link.url} target="_blank" rel="nofollow noopener noreferrer" className={styles.linkItem}>
                 <span>{link.label}</span>
                 <strong>{hostFromUrl(link.url)}</strong>
               </a>
@@ -451,12 +451,12 @@ export function ProviderProfileShell({
 
           <div className={styles.topActions}>
             {provider.website ? (
-              <a href={provider.website} target="_blank" rel="noreferrer" className={styles.primaryAction}>
+              <a href={provider.website} target="_blank" rel="nofollow noopener noreferrer" className={styles.primaryAction}>
                 Official site
               </a>
             ) : null}
             {provider.docs_url ? (
-              <a href={provider.docs_url} target="_blank" rel="noreferrer" className={styles.ghostAction}>
+              <a href={provider.docs_url} target="_blank" rel="nofollow noopener noreferrer" className={styles.ghostAction}>
                 Docs
               </a>
             ) : null}
@@ -519,7 +519,7 @@ export function ProviderProfileShell({
                 </span>
                 <span>
                   {row.action ? (
-                    <a href={row.action.href} target="_blank" rel="noreferrer" className={styles.rowAction}>
+                    <a href={row.action.href} target="_blank" rel="nofollow noopener noreferrer" className={styles.rowAction}>
                       {row.action.label}
                     </a>
                   ) : (

@@ -1,5 +1,6 @@
 import { requireCurrentAccount } from '@/lib/auth/account';
-import { listAccountProfileMemberships } from '@/lib/referrals/owner';
+import { canReviewAccount } from '@/lib/auth/reviewer';
+import { ensureSiteAdminProfileForAccount, listAccountProfileMemberships } from '@/lib/referrals/owner';
 import { DashboardHome } from '@/components/dashboard-home';
 
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,12 @@ export default async function DashboardPage({
 }) {
   const account = await requireCurrentAccount('/dashboard');
   const resolvedSearchParams = searchParams ? await searchParams : {};
+  if (canReviewAccount(account)) {
+    await ensureSiteAdminProfileForAccount(account.userId, {
+      displayName: 'Site Admin',
+      email: account.email,
+    });
+  }
   const memberships = await listAccountProfileMemberships(account.userId);
 
   return (

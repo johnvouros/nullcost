@@ -7,49 +7,53 @@ import styles from './page.module.css';
 const quickSteps = [
   {
     number: '01',
-    title: 'Ask your coding agent',
-    subtitle: 'Copy this prompt into Codex, Claude Code, Cursor, or another agent with terminal access.',
-    commands: ['Install the Nullcost catalog, seed the database, and start the MCP server.'],
+    title: 'Copy this into your coding app',
+    subtitle: 'Use this in Codex, Claude Code, Cursor, Windsurf, or another agent that can edit files and run terminal commands.',
+    commands: [
+      'Install the Nullcost Catalog plugin from https://github.com/johnvouros/nullcost/tree/main/plugins/nullcost-catalog. Use it when I ask about cheap or free-tier developer tools. If this app cannot install repo plugins, tell me and use the manual MCP fallback instead.',
+    ],
     caveats:
-      'Your agent needs terminal access. It will run npm commands and local Supabase setup, so use this only in a repo and machine you trust.',
+      'Paste this into the AI coding app you already use. Do not paste it into Google, ChatGPT web search, or a normal terminal.',
     highlight: true,
   },
   {
     number: '02',
-    title: 'Start the local data',
-    subtitle: 'Gives Nullcost a real catalog to query.',
-    commands: ['npm run supabase:start', 'npm run db:seed'],
+    title: 'Ask normal questions',
+    subtitle: 'No slash command needed when the plugin routing skill is active.',
+    commands: ['What is a cheap auth service with a real free tier?'],
   },
   {
     number: '03',
-    title: 'Start website and API',
-    subtitle: 'The site and MCP both read the same local API.',
-    commands: ['npm run dev'],
+    title: 'If plugin install fails',
+    subtitle: 'Copy this fallback prompt. It tells your agent exactly what to do.',
+    commands: [
+      'Clone https://github.com/johnvouros/nullcost, run npm install, then add the Manual MCP config from this install page to my coding app.',
+    ],
   },
   {
     number: '04',
-    title: 'Start the MCP server',
-    subtitle: 'This is the part your coding app talks to.',
-    commands: ['npm run mcp:catalog'],
+    title: 'Local development only',
+    subtitle: 'Only run these if you cloned the repo and want to develop Nullcost itself.',
+    commands: ['npm run supabase:start', 'npm run db:seed', 'npm run dev'],
   },
 ] as const;
 
 const appPaths = [
   {
     name: 'Codex',
-    label: 'Start the commands above, then reload this repo.',
-    tag: 'Fastest',
+    label: 'Paste Step 1 into Codex inside your project.',
+    tag: 'Easiest',
     kind: 'cpu',
   },
   {
     name: 'Claude',
-    label: 'Uses the project plugin through the same local catalog.',
+    label: 'Use the plugin folder if your Claude setup supports plugins.',
     tag: 'Ready',
     kind: 'grid',
   },
   {
     name: 'Any MCP client',
-    label: 'Point it at the server if it supports raw MCP config.',
+    label: 'Use Manual MCP config if plugins are not supported.',
     tag: null,
     kind: 'terminal',
   },
@@ -65,23 +69,50 @@ const promptIdeas = [
 const genericConfig = `{
   "nullcost-provider-catalog": {
     "command": "node",
-    "args": ["/path/to/nullcost/mcp/referiate-provider-server.mjs"],
+    "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
     "env": {
       "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
     }
   }
 }`;
 
+const noobChecklist = [
+  'Open the AI coding app you already use.',
+  'Paste Step 1 into its chat.',
+  'Let it add the plugin.',
+  'If it says plugins are not supported, paste Step 3 instead.',
+  'Restart or reload that coding app if it asks.',
+  'Ask one of the test prompts below.',
+] as const;
+
+const manualFallbackSteps = [
+  {
+    title: 'Clone Nullcost',
+    text: 'This puts the MCP server files on your machine.',
+    command: 'git clone https://github.com/johnvouros/nullcost',
+  },
+  {
+    title: 'Install dependencies',
+    text: 'Run this once inside the cloned folder.',
+    command: 'cd nullcost && npm install',
+  },
+  {
+    title: 'Paste the MCP config',
+    text: 'Open your coding app MCP settings, paste the JSON below, then restart the app.',
+    command: null,
+  },
+] as const;
+
 export const metadata: Metadata = {
   title: 'Install',
   description:
-    'Install Nullcost fast: start the local catalog, run the MCP server, and connect Codex, Claude, or another MCP client.',
+    'Install the Nullcost plugin for Codex or Claude, or use the raw MCP server directly from any compatible client.',
   alternates: {
     canonical: '/install',
   },
   openGraph: {
     title: `Install ${SITE_NAME}`,
-    description: 'Start Nullcost fast with the local MCP path and simple client setup.',
+    description: 'Install Nullcost as a plugin first, with raw MCP available as the power-user fallback.',
     url: absoluteUrl('/install'),
     type: 'article',
   },
@@ -251,22 +282,34 @@ export default function InstallPage() {
               <div className={styles.heroKickerIcon}>
                 <Glyph kind="zap" />
               </div>
-              <span>Setup guide</span>
+              <span>Plugin setup</span>
             </div>
 
             <h1>
-              Install <span>Nullcost</span> fast.
+              Install the <span>Nullcost plugin</span>.
             </h1>
             <p>
-              The easiest path is to let your coding agent do the setup, or run the local commands below if you want
-              the manual route.
+              If you are new to coding tools, do not worry about MCP. Start with Step 1. If your app cannot install
+              plugins, use the manual fallback below.
             </p>
+          </section>
+
+          <section className={`${styles.panel} ${styles.checklistPanel}`}>
+            <div className={styles.panelHeader}>
+              <h2>What you actually do</h2>
+              <span>5 minutes</span>
+            </div>
+            <ol className={styles.checklist}>
+              {noobChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ol>
           </section>
 
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>Installation steps</h2>
-              <span>Recommended for most users</span>
+              <h2>Plugin-first setup</h2>
+              <span>Recommended</span>
             </div>
 
             <div className={styles.stepList}>
@@ -275,7 +318,7 @@ export default function InstallPage() {
               ))}
 
               <div className={styles.divider}>
-                <span>Or do it manually</span>
+                <span>Manual paths</span>
               </div>
 
               {quickSteps.slice(1).map((step) => (
@@ -287,8 +330,35 @@ export default function InstallPage() {
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
               <h2>Manual config</h2>
-              <span>Only for other MCP clients</span>
+              <span>Only if Step 1 fails</span>
             </div>
+
+            <p className={styles.panelIntro}>
+              Use this only when your coding app says it cannot install plugins. It is more manual, but it connects to
+              the same hosted Nullcost catalog.
+            </p>
+
+            <ol className={styles.fallbackList}>
+              {manualFallbackSteps.map((step) => (
+                <li key={step.title}>
+                  <div>
+                    <strong>{step.title}</strong>
+                    <span>{step.text}</span>
+                  </div>
+                  {step.command ? (
+                    <div className={styles.fallbackCommand}>
+                      <code>{step.command}</code>
+                      <CopyButton value={step.command} className={styles.fallbackCopyButton} iconOnly />
+                    </div>
+                  ) : null}
+                </li>
+              ))}
+            </ol>
+
+            <p className={styles.panelIntro}>
+              In the JSON below, replace <code>/path/to/nullcost</code> with the full folder path where you cloned the
+              repo.
+            </p>
 
             <div className={styles.manualCard}>
               <pre>
@@ -308,16 +378,16 @@ export default function InstallPage() {
 
             <div className={styles.infoBlocks}>
               <div>
-                <h3>Use MCP before plugins.</h3>
-                <p>Nullcost already works as a local MCP server. The plugin layer is just a thin wrapper.</p>
+                <h3>Use the plugin first.</h3>
+                <p>You do not need to understand MCP to use Nullcost. The plugin handles the normal path.</p>
               </div>
               <div>
-                <h3>Need to know</h3>
-                <p>MCP lets your coding app query Nullcost directly.</p>
+                <h3>What if my app says no?</h3>
+                <p>Then use the Manual MCP config. It is the same catalog tool, just without the plugin wrapper.</p>
               </div>
               <div>
                 <h3>What you get</h3>
-                <p>Free-tier and free-trial tool discovery from the same DB as this site.</p>
+                <p>Free-tier and free-trial tool discovery from the same hosted catalog as this site.</p>
               </div>
             </div>
           </section>
@@ -352,9 +422,9 @@ export default function InstallPage() {
             <div className={styles.detailsBody}>
               <ul>
                 <li>The site, provider pages, and MCP all read the same local Nullcost catalog.</li>
-                <li>Codex uses local MCP plus repo-local plugin metadata for this workspace.</li>
-                <li>Claude uses the same server through the local plugin wrapper.</li>
-                <li>Plugins stay thin. Ranking and catalog logic live in one shared backend.</li>
+                <li>The plugin gives branding, prompt routing, and a simpler install surface.</li>
+                <li>MCP gives the actual searchable/recommendation tools.</li>
+                <li>You can use MCP without the plugin, but the plugin is not useful without the MCP engine.</li>
               </ul>
               <Link href="/" className={styles.detailsLink}>
                 Back to catalog

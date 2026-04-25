@@ -163,6 +163,11 @@ export interface UpsertAccountProviderEntryResult {
   created: boolean;
 }
 
+export interface SiteAdminProfileInput {
+  displayName: string;
+  email: string;
+}
+
 export interface ProfileBasicsInput {
   displayName: string;
   bio?: string | null;
@@ -308,6 +313,10 @@ function buildManagedProfileSlug(accountId: string, input: AccountProfileSeedInp
 
 function buildManagedProfileName(input: AccountProfileSeedInput) {
   return compact(input.displayName) || fallbackNameFromEmail(input.email);
+}
+
+function siteAdminProfileName(input: SiteAdminProfileInput) {
+  return compact(input.displayName) || 'Site Admin';
 }
 
 function parseReferralKind(value: string | null | undefined): ReferralEntryKind {
@@ -723,12 +732,12 @@ export async function requestProfileClaim(accountId: string, profileSlug: string
   }
 
   if (existing) {
-    if (existing.status === 'pending' && (count ?? 0) === 0) {
+    if (existing.status === 'rejected' && (count ?? 0) === 0) {
       const { data, error } = await supabase
         .from('profile_memberships')
         .update({
-          status: 'active',
-          responded_at: new Date().toISOString(),
+          status: 'pending',
+          responded_at: null,
           rejection_reason: null,
         })
         .eq('id', existing.id)
@@ -736,7 +745,7 @@ export async function requestProfileClaim(accountId: string, profileSlug: string
         .single();
 
       if (error) {
-        throw new Error(`Profile claim activation failed: ${error.message}`);
+        throw new Error(`Profile claim request failed: ${error.message}`);
       }
 
       return {
@@ -767,8 +776,7 @@ export async function requestProfileClaim(accountId: string, profileSlug: string
       profile_id: profile.id,
       account_id: requireText(accountId, 'accountId'),
       role: 'owner',
-      status: 'active',
-      responded_at: new Date().toISOString(),
+      status: 'pending',
     })
     .select('role, status')
     .single();
@@ -784,6 +792,106 @@ export async function requestProfileClaim(accountId: string, profileSlug: string
     status: data.status,
     created: true,
   };
+}
+
+export async function ensureSiteAdminProfileForAccount(accountId: string, input: SiteAdminProfileInput) {
+  const supabase = getServiceSupabaseClient();
+  const profileSlug = 'site-admin';
+  const profileName = siteAdminProfileName(input);
+
+  const { data: existingProfile, error: existingProfileError } = await supabase
+    .from('referral_profiles')
+    .select('id, slug, display_name')
+    .eq('slug', profileSlug)
+    .maybeSingle();
+
+  if (existingProfileError) {
+    throw new Error(`Site admin profile lookup failed: ${existingProfileError.message}`);
+  }
+
+  let profileId = existingProfile?.id || null;
+
+  if (!profileId) {
+    const { data: insertedProfile, error: insertedProfileError } = await supabase
+      .from('referral_profiles')
+      .insert({
+        slug: profileSlug,
+        display_name: profileName,
+        bio: 'Official Nullcost site admin profile.',
+        website: null,
+        status: 'active',
+        metadata: {
+          protected: true,
+          kind: 'site_admin',
+        },
+      })
+      .select('id')
+      .single();
+
+    if (insertedProfileError) {
+      throw new Error(`Site admin profile creation failed: ${insertedProfileError.message}`);
+    }
+
+    profileId = insertedProfile.id;
+  }
+
+  const existingMembership = await getMembershipForAccount(accountId, profileId);
+  if (existingMembership?.status === 'active') {
+    return;
+  }
+
+  const { count, error: ownerCountError } = await supabase
+    .from('profile_memberships')
+    .select('id', { count: 'exact', head: true })
+    .eq('profile_id', profileId)
+    .eq('role', 'owner')
+    .eq('status', 'active');
+
+  if (ownerCountError) {
+    throw new Error(`Site admin owner check failed: ${ownerCountError.message}`);
+  }
+
+  if ((count ?? 0) > 0) {
+    return;
+  }
+
+  if (existingMembership) {
+    const { error } = await supabase
+      .from('profile_memberships')
+      .update({
+        role: 'owner',
+        status: 'active',
+        responded_at: new Date().toISOString(),
+        rejection_reason: null,
+        metadata: {
+          protected: true,
+          kind: 'site_admin',
+        },
+      })
+      .eq('id', existingMembership.id);
+
+    if (error) {
+      throw new Error(`Site admin membership activation failed: ${error.message}`);
+    }
+
+    return;
+  }
+
+  const { error } = await supabase.from('profile_memberships').insert({
+    profile_id: profileId,
+    account_id: requireText(accountId, 'accountId'),
+    role: 'owner',
+    status: 'active',
+    responded_at: new Date().toISOString(),
+    metadata: {
+      protected: true,
+      kind: 'site_admin',
+    },
+  });
+
+  if (error) {
+    throw new Error(`Site admin membership creation failed: ${error.message}`);
+  }
 }
 
 export async function getOwnedProfileWorkspace(accountId: string, profileSlug: string): Promise<OwnedProfileWorkspace> {

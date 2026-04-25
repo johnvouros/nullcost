@@ -59,8 +59,8 @@ export default async function HomePage() {
       <ProviderCatalog providers={providers} />
 
       <div className="cb-page__support">
-        <p>Same free-entry catalog across the website, provider pages, and the Nullcost MCP install path.</p>
-        <Link href="/install">Install paths</Link>
+        <p>Same free-entry catalog across the website, provider pages, and the Nullcost plugin.</p>
+        <Link href="/install">Install plugin</Link>
       </div>
     </div>
   );

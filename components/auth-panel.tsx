@@ -37,7 +37,6 @@ export function AuthPanel({ defaultMode = 'sign-in', nextPath = '/dashboard' }: 
             email,
             password,
             nextPath,
-            emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth` : undefined,
           }),
         });
         const payload = await response.json();

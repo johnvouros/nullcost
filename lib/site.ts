@@ -2,6 +2,7 @@ export const SITE_NAME = 'Nullcost';
 export const SITE_TAGLINE = 'Free-entry developer tool catalog with free-tier, free-trial, setup, and referral signals.';
 export const SITE_DESCRIPTION =
   'Nullcost is a searchable catalog of free-entry developer tooling providers with free-tier, free-trial, setup friction, MCP, API, and referral signals.';
+export const GITHUB_REPOSITORY_URL = 'https://github.com/johnvouros/nullcost';
 
 const LOCAL_SITE_URL = 'http://127.0.0.1:3000';
 

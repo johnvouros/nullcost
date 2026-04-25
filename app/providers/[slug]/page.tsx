@@ -66,6 +66,17 @@ export async function generateMetadata({
       provider.use_case ?? '',
       'developer tool provider',
     ].filter(Boolean),
+    robots: {
+      index: true,
+      follow: false,
+      googleBot: {
+        index: true,
+        follow: false,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
+      },
+    },
   };
 }
 

@@ -40,7 +40,7 @@ export function DashboardShell({
     <div className={styles.shell}>
       <aside className={styles.rail}>
         <Link href="/" className={styles.brand} title="Catalog">
-          NC
+          <span aria-hidden="true" />
         </Link>
 
         <nav className={styles.nav} aria-label="Dashboard navigation">

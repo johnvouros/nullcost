@@ -844,7 +844,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
     <div className="cb-shell">
       <aside className="cb-rail" aria-label="Dashboard rail">
         <Link href="/" className="cb-rail__brand" aria-label="Nullcost home">
-          <span className="cb-rail__mark">C</span>
+          <span className="cb-rail__mark" aria-hidden="true" />
         </Link>
 
         <nav className="cb-rail__nav">
@@ -889,8 +889,8 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
           >
             <Glyph name="route" />
           </button>
-          <Link href="/install" className="cb-rail__button" aria-label="Install" title="Open install paths">
-            <Glyph name="profile" />
+          <Link href="/install" className="cb-rail__button" aria-label="Install plugin" title="Install the Nullcost plugin">
+            <Glyph name="terminal" />
           </Link>
         </nav>
 
@@ -974,16 +974,19 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                 <strong>{latestSyncLabel}</strong>
               </div>
               <span className="cb-topbar__divider" aria-hidden="true" />
-              <Link href="/install" className="cb-cli-access" title="Install and use the same Nullcost catalog through MCP">
+              <Link href="/install" className="cb-cli-access" title="Install the Nullcost plugin; MCP is the engine underneath">
                 <Glyph name="terminal" />
-                <span>INSTALL PATHS</span>
+                <span>INSTALL PLUGIN</span>
               </Link>
             </div>
           </div>
 
           <div className="cb-topbar__main">
             <div className="cb-topbar__copy">
-              <p className="cb-kicker">Nullcost</p>
+              <p className="cb-kicker cb-kicker--brand">
+                <span className="cb-kicker__mark" aria-hidden="true" />
+                <span>Nullcost</span>
+              </p>
               <div className="cb-headline">
                 <h1>Free-entry developer tools</h1>
                 <span className="cb-version">beta</span>
@@ -1057,7 +1060,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
               </span>
               {selectedProviders.length > 0 ? <span>{selectedProviders.length}/3 selected for compare</span> : null}
               <Link href="/install" className="cb-toolbar__link">
-                Install paths
+                Install plugin
               </Link>
               {selectedProviders.length > 0 ? (
                 <button
@@ -1240,7 +1243,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                                       <a
                                         href={officialQuickUrl}
                                         target="_blank"
-                                        rel="noreferrer"
+                                        rel="nofollow noopener noreferrer"
                                         className="cb-referral__text-link cb-referral__text-link--official"
                                         title={`Open ${provider.name} official site`}
                                         aria-label={`Open ${provider.name} official site`}
@@ -1293,22 +1296,22 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                                       <Link href={`/providers/${provider.slug}`}>Provider profile</Link>
                                       <a href={`/go/${provider.slug}`}>{getRouteLabel(provider)}</a>
                                       {provider.signup_url ? (
-                                        <a href={provider.signup_url} target="_blank" rel="noreferrer">
+                                        <a href={provider.signup_url} target="_blank" rel="nofollow noopener noreferrer">
                                           Signup
                                         </a>
                                       ) : null}
                                       {provider.website ? (
-                                        <a href={provider.website} target="_blank" rel="noreferrer">
+                                        <a href={provider.website} target="_blank" rel="nofollow noopener noreferrer">
                                           Official site
                                         </a>
                                       ) : null}
                                       {provider.pricing_url ? (
-                                        <a href={provider.pricing_url} target="_blank" rel="noreferrer">
+                                        <a href={provider.pricing_url} target="_blank" rel="nofollow noopener noreferrer">
                                           Pricing
                                         </a>
                                       ) : null}
                                       {provider.docs_url ? (
-                                        <a href={provider.docs_url} target="_blank" rel="noreferrer">
+                                        <a href={provider.docs_url} target="_blank" rel="nofollow noopener noreferrer">
                                           Docs
                                         </a>
                                       ) : null}

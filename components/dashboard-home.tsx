@@ -46,6 +46,8 @@ function getNoticeCopy(value?: string | null) {
       return 'Your account details were saved.';
     case 'claim-active':
       return 'Your code page is ready.';
+    case 'claim-requested':
+      return 'Your access request is waiting for approval.';
     default:
       return null;
   }

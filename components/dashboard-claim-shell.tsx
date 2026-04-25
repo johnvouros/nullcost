@@ -95,7 +95,7 @@ export function DashboardClaimShell({ account, workspace, notice, error }: Dashb
     <DashboardShell
       accountName={account.profile.displayName}
       title={`Claim ${target.profile.displayName}`}
-      subtitle="If this profile is free, you can claim it now. If it already has an owner, it is locked for now."
+      subtitle="Profile access is reviewed first. Nobody gets instant ownership of existing public profiles."
       section="claim"
       backHref="/dashboard"
       backLabel="Back to dashboard"
@@ -119,7 +119,7 @@ export function DashboardClaimShell({ account, workspace, notice, error }: Dashb
               </p>
             </div>
             <span className={`${styles.pill} ${hasActiveOwner ? styles.pillWarn : styles.pillGood}`}>
-              {hasActiveOwner ? 'Already owned' : 'Available'}
+              {hasActiveOwner ? 'Already owned' : 'Needs review'}
             </span>
           </div>
 
@@ -145,7 +145,7 @@ export function DashboardClaimShell({ account, workspace, notice, error }: Dashb
           <div className={styles.panelHeader}>
             <div>
               <h2 className={styles.panelTitle}>Request status</h2>
-              <p className={styles.panelText}>If nobody owns this profile, you get access right away. If it is already owned, it is locked for now.</p>
+              <p className={styles.panelText}>Request access here. A site admin must approve it before you can edit anything.</p>
             </div>
           </div>
 
@@ -204,7 +204,7 @@ export function DashboardClaimShell({ account, workspace, notice, error }: Dashb
               <form action={requestProfileClaimAction} className={styles.form}>
                 <input type="hidden" name="profileSlug" value={target.profile.slug} />
                 <div className={styles.actions}>
-                  <button type="submit" className={styles.buttonPrimary}>Claim this profile</button>
+                  <button type="submit" className={styles.buttonPrimary}>Request access</button>
                   <Link href={`/profiles/${target.profile.slug}`} className={styles.linkButton}>
                     View public profile
                   </Link>

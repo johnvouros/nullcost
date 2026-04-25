@@ -1,7 +1,7 @@
 {
   "name": "nullcost-catalog",
   "version": "0.1.0",
-  "description": "Find cheap, free-tier, and best-value developer services from the local Nullcost catalog.",
+  "description": "Install Nullcost as a plugin-first free-tier developer service finder backed by the hosted catalog and local MCP engine.",
   "author": {
     "name": "Nullcost"
   },
@@ -17,8 +17,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Nullcost",
-    "shortDescription": "Cheap and best-value developer service finder",
-    "longDescription": "Use Nullcost when someone asks plain-English questions like what is a cheap auth service, which hosting has a real free tier, which email API is cheapest, or what is the best value Postgres for a coding stack. For v1, answer from the shared Nullcost catalog database only and do not browse or verify live pricing pages. Do not use it for domain availability, registrar pricing, TLD comparisons, or exact domain registration checks.",
+    "shortDescription": "Plugin-first free-tier developer service finder",
+    "longDescription": "Use Nullcost when someone asks plain-English questions like what is a cheap auth service, which hosting has a real free tier, which email API is cheapest, or what is the best value Postgres for a coding stack. The plugin supplies the install surface, icon, and routing rules; the bundled MCP server supplies the actual catalog tools. For v1, answer from the shared Nullcost catalog database only and do not browse or verify live pricing pages. Do not use it for domain availability, registrar pricing, TLD comparisons, or exact domain registration checks.",
     "developerName": "Nullcost",
     "category": "Coding",
     "capabilities": [

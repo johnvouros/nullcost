@@ -11,6 +11,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: [
           '/',
           '/install',
+          '/privacy',
+          '/terms',
           '/providers/',
           '/profiles/',
           '/sitemap.xml',

@@ -80,6 +80,10 @@ export async function requestProfileClaimAction(formData: FormData) {
       redirect(`/dashboard/profiles/${result.profileSlug}?notice=claim-active`);
     }
 
+    if (result.status === 'pending') {
+      redirect(`/dashboard/claim/${result.profileSlug}?notice=claim-requested`);
+    }
+
     if (result.status === 'rejected') {
       redirect(`/dashboard/claim/${result.profileSlug}?error=claim-rejected`);
     }
