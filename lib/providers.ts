@@ -155,6 +155,35 @@ interface PlanSelectionIntent {
   preferFreeTrial?: boolean;
 }
 
+type CacheEntry<T> = {
+  expiresAt: number;
+  value: Promise<T>;
+};
+
+const PROVIDER_CACHE_TTL_MS = 5 * 60 * 1000;
+const memoryCache = new Map<string, CacheEntry<unknown>>();
+
+function memoizeFor<T>(key: string, loader: () => Promise<T>): Promise<T> {
+  const now = Date.now();
+  const cached = memoryCache.get(key) as CacheEntry<T> | undefined;
+
+  if (cached && cached.expiresAt > now) {
+    return cached.value;
+  }
+
+  const value = loader().catch((error) => {
+    memoryCache.delete(key);
+    throw error;
+  });
+
+  memoryCache.set(key, {
+    expiresAt: now + PROVIDER_CACHE_TTL_MS,
+    value,
+  });
+
+  return value;
+}
+
 function compact(value: string | null | undefined): string {
   return String(value ?? '')
     .replace(/\s+/g, ' ')
@@ -557,80 +586,86 @@ function isPublicCatalogProvider(provider: ProviderRow): boolean {
 }
 
 async function loadPublicProviders(): Promise<ProviderRow[]> {
-  const [providers, plans] = await Promise.all([loadAllProviders(), loadAllProviderPlans()]);
-  const plansByProviderId = buildProviderPlansMap(plans);
+  return memoizeFor('public-providers', async () => {
+    const [providers, plans] = await Promise.all([loadAllProviders(), loadAllProviderPlans()]);
+    const plansByProviderId = buildProviderPlansMap(plans);
 
-  return providers
-    .map((provider) => applyPublicCatalogSignals(provider, plansByProviderId.get(provider.id) ?? []))
-    .filter((provider) => isPublicCatalogProvider(provider));
+    return providers
+      .map((provider) => applyPublicCatalogSignals(provider, plansByProviderId.get(provider.id) ?? []))
+      .filter((provider) => isPublicCatalogProvider(provider));
+  });
 }
 
 async function loadAllProviders(): Promise<ProviderRow[]> {
-  const supabase = getSupabaseClient();
-  const pageSize = 1000;
-  const rows: ProviderRow[] = [];
-  let page = 0;
+  return memoizeFor('all-providers', async () => {
+    const supabase = getSupabaseClient();
+    const pageSize = 1000;
+    const rows: ProviderRow[] = [];
+    let page = 0;
 
-  while (true) {
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-    const { data, error } = await supabase
-      .from('providers')
-      .select(PROVIDER_COLUMNS)
-      .order('name')
-      .range(from, to);
+    while (true) {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error } = await supabase
+        .from('providers')
+        .select(PROVIDER_COLUMNS)
+        .order('name')
+        .range(from, to);
 
-    if (error) {
-      throw new Error(`Failed to load providers from Supabase: ${error.message}`);
+      if (error) {
+        throw new Error(`Failed to load providers from Supabase: ${error.message}`);
+      }
+
+      const batch = (data ?? []) as unknown as ProviderRow[];
+      rows.push(...batch);
+
+      if (batch.length < pageSize) {
+        break;
+      }
+
+      page += 1;
     }
 
-    const batch = (data ?? []) as unknown as ProviderRow[];
-    rows.push(...batch);
-
-    if (batch.length < pageSize) {
-      break;
-    }
-
-    page += 1;
-  }
-
-  return rows;
+    return rows;
+  });
 }
 
 async function loadAllProviderPlans(): Promise<ProviderPlanRow[]> {
-  const supabase = getSupabaseClient();
-  const pageSize = 1000;
-  const rows: ProviderPlanRow[] = [];
-  let page = 0;
+  return memoizeFor('all-provider-plans', async () => {
+    const supabase = getSupabaseClient();
+    const pageSize = 1000;
+    const rows: ProviderPlanRow[] = [];
+    let page = 0;
 
-  while (true) {
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-    const { data, error } = await supabase
-      .from('provider_plans')
-      .select(PROVIDER_PLAN_COLUMNS)
-      .order('sort_order', { ascending: true })
-      .order('name', { ascending: true })
-      .range(from, to);
+    while (true) {
+      const from = page * pageSize;
+      const to = from + pageSize - 1;
+      const { data, error } = await supabase
+        .from('provider_plans')
+        .select(PROVIDER_PLAN_COLUMNS)
+        .order('sort_order', { ascending: true })
+        .order('name', { ascending: true })
+        .range(from, to);
 
-    if (error) {
-      throw new Error(`Failed to load provider plans from Supabase: ${error.message}`);
+      if (error) {
+        throw new Error(`Failed to load provider plans from Supabase: ${error.message}`);
+      }
+
+      const batch = ((data ?? []) as unknown as ProviderPlanRow[]).map((plan) => ({
+        ...plan,
+        best_for_tags: normalizePlanTags((plan as ProviderPlanRow).best_for_tags),
+      }));
+      rows.push(...batch);
+
+      if (batch.length < pageSize) {
+        break;
+      }
+
+      page += 1;
     }
 
-    const batch = ((data ?? []) as unknown as ProviderPlanRow[]).map((plan) => ({
-      ...plan,
-      best_for_tags: normalizePlanTags((plan as ProviderPlanRow).best_for_tags),
-    }));
-    rows.push(...batch);
-
-    if (batch.length < pageSize) {
-      break;
-    }
-
-    page += 1;
-  }
-
-  return rows;
+    return rows;
+  });
 }
 
 export async function getProviderRows(filters: ProviderFilters = {}): Promise<ProviderRow[]> {

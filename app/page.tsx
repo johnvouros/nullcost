@@ -5,6 +5,7 @@ import { getProviderRows } from '@/lib/providers';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_TAGLINE, absoluteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
+const HOME_PROVIDER_LIMIT = 500;
 
 export const metadata: Metadata = {
   title: 'Provider catalog',
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const providers = await getProviderRows();
+  const providers = await getProviderRows({ limit: HOME_PROVIDER_LIMIT });
   const itemListJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',

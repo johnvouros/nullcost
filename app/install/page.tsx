@@ -401,7 +401,40 @@ function ClientSetupCard({
   note: string;
 }) {
   return (
-    <article className={styles.clientSetupCard}>
+    <details className={styles.clientSetupCard}>
+      <summary>
+        <div className={styles.clientSetupHeader}>
+          <div>
+            <h3>{name}</h3>
+            <span>{file}</span>
+          </div>
+          <strong>{tag}</strong>
+        </div>
+        <p>{note}</p>
+      </summary>
+      <div className={styles.clientSetupCommand}>
+        <pre>
+          <code>{config}</code>
+        </pre>
+        <CopyButton value={config} className={styles.overlayCopyButton} iconOnly />
+      </div>
+    </details>
+  );
+}
+
+function ClientSetupPreviewCard({
+  name,
+  tag,
+  file,
+  config,
+}: {
+  name: string;
+  tag: string;
+  file: string;
+  config: string;
+}) {
+  return (
+    <article className={styles.clientSetupPreviewCard}>
       <div className={styles.clientSetupHeader}>
         <div>
           <h3>{name}</h3>
@@ -409,13 +442,7 @@ function ClientSetupCard({
         </div>
         <strong>{tag}</strong>
       </div>
-      <p>{note}</p>
-      <div className={styles.clientSetupCommand}>
-        <pre>
-          <code>{config}</code>
-        </pre>
-        <CopyButton value={config} className={styles.overlayCopyButton} iconOnly />
-      </div>
+      <CopyButton value={config} className={styles.copyConfigButton} idleLabel="Copy setup" copiedLabel="Copied" />
     </article>
   );
 }
@@ -437,42 +464,57 @@ export default function InstallPage() {
               Install the <span>Nullcost plugin</span>.
             </h1>
             <p>
-              Pick your coding app. Copy the matching setup. If your app does not support plugins, use the MCP config
-              for that app instead.
+              Pick your app, copy one setup, restart that app, then ask for free-tier tools.
             </p>
           </section>
 
-          <section className={`${styles.panel} ${styles.checklistPanel}`}>
+          <section className={`${styles.panel} ${styles.fastPanel}`}>
             <div className={styles.panelHeader}>
-              <h2>What you actually do</h2>
-              <span>5 minutes</span>
+              <h2>Fast path</h2>
+              <span>Copy one</span>
             </div>
-            <ol className={styles.checklist}>
-              {noobChecklist.map((item) => (
-                <li key={item}>{item}</li>
+            <div className={styles.clientSetupPreviewGrid}>
+              {installTargets.slice(0, 6).map((target) => (
+                <ClientSetupPreviewCard key={target.name} {...target} />
               ))}
-            </ol>
+            </div>
           </section>
 
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>Choose your coding app</h2>
-              <span>Copy one</span>
+              <h2>Other clients</h2>
+              <span>Expand if needed</span>
             </div>
 
             <p className={styles.panelIntro}>
-              Most tools use MCP, but the config wrapper changes. Replace <code>/path/to/nullcost</code> with the folder
-              where you cloned this repo.
+              Expand only if your client is not in the fast path. Replace <code>/path/to/nullcost</code> with the folder
+              where you cloned the repo.
             </p>
 
             <div className={styles.clientSetupGrid}>
-              {installTargets.map((target) => (
+              {installTargets.slice(6).map((target) => (
                 <ClientSetupCard key={target.name} {...target} />
               ))}
             </div>
           </section>
 
-          <section className={styles.panel}>
+          <details className={styles.panel}>
+            <summary className={styles.panelSummary}>
+              <span>Step-by-step fallback</span>
+              <small>If the copied setup fails</small>
+            </summary>
+            <ol className={styles.checklist}>
+              {noobChecklist.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+            </ol>
+          </details>
+
+          <details className={styles.panel}>
+            <summary className={styles.panelSummary}>
+              <span>Simple prompt fallback</span>
+              <small>If unsure</small>
+            </summary>
             <div className={styles.panelHeader}>
               <h2>Simple fallback</h2>
               <span>If unsure</span>
@@ -491,14 +533,13 @@ export default function InstallPage() {
                 <StepCard key={step.number} {...step} />
               ))}
             </div>
-          </section>
+          </details>
 
-          <section className={styles.panel}>
-            <div className={styles.panelHeader}>
-              <h2>Manual config</h2>
-              <span>Only if Step 1 fails</span>
-            </div>
-
+          <details className={styles.panel}>
+            <summary className={styles.panelSummary}>
+              <span>Manual MCP config</span>
+              <small>Power-user fallback</small>
+            </summary>
             <p className={styles.panelIntro}>
               Use this only when your coding app says it cannot install plugins. It is more manual, but it connects to
               the same hosted Nullcost catalog.
@@ -532,7 +573,7 @@ export default function InstallPage() {
               </pre>
               <CopyButton value={mcpServersConfig} className={styles.overlayCopyButton} iconOnly />
             </div>
-          </section>
+          </details>
         </div>
 
         <aside className={styles.sidebar}>

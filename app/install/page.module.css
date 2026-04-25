@@ -136,6 +136,44 @@
     #0f1115;
 }
 
+.fastPanel {
+  background:
+    radial-gradient(circle at top right, rgba(37, 206, 105, 0.08), transparent 38%),
+    #0f1115;
+}
+
+.panelSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  cursor: pointer;
+  list-style: none;
+}
+
+.panelSummary::-webkit-details-marker {
+  display: none;
+}
+
+.panelSummary span {
+  color: #ffffff;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.panelSummary small {
+  color: #68717e;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.panel[open] .panelSummary {
+  margin-bottom: 16px;
+}
+
 .checklist {
   display: grid;
   gap: 10px;
@@ -250,19 +288,42 @@
   transform: translateY(-50%);
 }
 
-.clientSetupGrid {
+.clientSetupGrid,
+.clientSetupPreviewGrid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
 
-.clientSetupCard {
+.clientSetupGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.clientSetupPreviewGrid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.clientSetupCard,
+.clientSetupPreviewCard {
   display: grid;
   gap: 12px;
   padding: 14px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 16px;
   background: rgba(0, 0, 0, 0.22);
+}
+
+.clientSetupCard {
+  cursor: pointer;
+}
+
+.clientSetupCard summary {
+  display: grid;
+  gap: 10px;
+  list-style: none;
+}
+
+.clientSetupCard summary::-webkit-details-marker {
+  display: none;
 }
 
 .clientSetupHeader {
@@ -300,7 +361,8 @@
   text-transform: uppercase;
 }
 
-.clientSetupCard p {
+.clientSetupCard p,
+.clientSetupPreviewCard p {
   margin: 0;
   color: #9ba4b0;
   font-size: 0.78rem;
@@ -309,6 +371,21 @@
 
 .clientSetupCommand {
   position: relative;
+}
+
+.copyConfigButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  width: 100%;
+  border: 1px solid rgba(37, 206, 105, 0.2);
+  border-radius: 10px;
+  background: rgba(37, 206, 105, 0.08);
+  color: #77efa5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .stepList {
@@ -792,7 +869,8 @@
     grid-template-columns: 1fr;
   }
 
-  .clientSetupGrid {
+  .clientSetupGrid,
+  .clientSetupPreviewGrid {
     grid-template-columns: 1fr;
   }
 
