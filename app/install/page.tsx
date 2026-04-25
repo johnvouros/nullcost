@@ -41,20 +41,20 @@ const quickSteps = [
 const appPaths = [
   {
     name: 'Codex',
-    label: 'Paste Step 1 into Codex inside your project.',
+    label: 'Plugin first, MCP fallback.',
     tag: 'Easiest',
     kind: 'cpu',
   },
   {
-    name: 'Claude',
-    label: 'Use the plugin folder if your Claude setup supports plugins.',
-    tag: 'Ready',
+    name: 'Claude / Cursor / Windsurf',
+    label: 'Use the MCP config card for your app.',
+    tag: 'MCP',
     kind: 'grid',
   },
   {
-    name: 'Any MCP client',
-    label: 'Use Manual MCP config if plugins are not supported.',
-    tag: null,
+    name: 'Cline / Roo / Zed / OpenCode',
+    label: 'Use raw MCP or the app-specific wrapper.',
+    tag: 'More',
     kind: 'terminal',
   },
 ] as const;
@@ -66,22 +66,63 @@ const promptIdeas = [
   'good hosting for a solo project with low setup friction',
 ] as const;
 
-const genericConfig = `{
-  "nullcost-provider-catalog": {
-    "command": "node",
-    "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
-    "env": {
-      "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+const mcpServersConfig = `{
+  "mcpServers": {
+    "nullcost": {
+      "command": "node",
+      "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
+      "env": {
+        "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+      }
+    }
+  }
+}`;
+
+const vsCodeConfig = `{
+  "servers": {
+    "nullcost": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
+      "env": {
+        "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+      }
+    }
+  }
+}`;
+
+const zedConfig = `{
+  "context_servers": {
+    "nullcost": {
+      "command": "node",
+      "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
+      "env": {
+        "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+      }
+    }
+  }
+}`;
+
+const openCodeConfig = `{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "nullcost": {
+      "type": "local",
+      "command": ["node", "/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
+      "enabled": true,
+      "environment": {
+        "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+      }
     }
   }
 }`;
 
 const noobChecklist = [
-  'Open the AI coding app you already use.',
-  'Paste Step 1 into its chat.',
-  'Let it add the plugin.',
-  'If it says plugins are not supported, paste Step 3 instead.',
-  'Restart or reload that coding app if it asks.',
+  'Pick your coding app below.',
+  'Clone Nullcost once if your app needs raw MCP.',
+  'Copy the config for your app.',
+  'Paste it into that app\'s MCP settings.',
+  'Restart or reload the app if it asks.',
   'Ask one of the test prompts below.',
 ] as const;
 
@@ -103,16 +144,90 @@ const manualFallbackSteps = [
   },
 ] as const;
 
+const installTargets = [
+  {
+    name: 'Codex',
+    tag: 'Plugin first',
+    file: 'Ask Codex inside your project',
+    config:
+      'Install the Nullcost Catalog plugin from https://github.com/johnvouros/nullcost/tree/main/plugins/nullcost-catalog. Use it when I ask about cheap or free-tier developer tools. If plugin install is not supported here, configure the Nullcost MCP server instead.',
+    note: 'Best noob path when repo plugins are available.',
+  },
+  {
+    name: 'Claude Code',
+    tag: 'MCP',
+    file: 'Claude MCP config',
+    config: mcpServersConfig,
+    note: 'Use the same raw MCP server if a plugin wrapper is not available in your Claude setup.',
+  },
+  {
+    name: 'Cursor',
+    tag: 'MCP',
+    file: '~/.cursor/mcp.json or project MCP settings',
+    config: mcpServersConfig,
+    note: 'Cursor uses MCP servers for external tools. Add Nullcost, then restart/reload Cursor.',
+  },
+  {
+    name: 'Windsurf',
+    tag: 'MCP',
+    file: 'Windsurf/Cascade MCP settings',
+    config: mcpServersConfig,
+    note: 'Use the manual MCP settings path in Cascade.',
+  },
+  {
+    name: 'VS Code / GitHub Copilot',
+    tag: 'MCP',
+    file: '.vscode/mcp.json or MCP: Open User Configuration',
+    config: vsCodeConfig,
+    note: 'VS Code uses a `servers` object, not `mcpServers`.',
+  },
+  {
+    name: 'Cline / Roo Code',
+    tag: 'MCP',
+    file: 'Extension MCP settings',
+    config: mcpServersConfig,
+    note: 'Open the extension MCP settings and add Nullcost as a stdio server.',
+  },
+  {
+    name: 'Gemini CLI',
+    tag: 'CLI MCP',
+    file: 'Gemini CLI MCP settings',
+    config: mcpServersConfig,
+    note: 'Use the same MCP server config shape unless your installed Gemini CLI version asks for a different wrapper.',
+  },
+  {
+    name: 'Zed',
+    tag: 'MCP',
+    file: 'Zed settings.json',
+    config: zedConfig,
+    note: 'Zed calls MCP servers `context_servers`.',
+  },
+  {
+    name: 'OpenCode',
+    tag: 'CLI / TUI',
+    file: 'opencode.json',
+    config: openCodeConfig,
+    note: 'OpenCode uses a top-level `mcp` object and local server command arrays.',
+  },
+  {
+    name: 'Amp / Any MCP client',
+    tag: 'Generic',
+    file: 'Generic MCP JSON',
+    config: mcpServersConfig,
+    note: 'If your app supports stdio MCP, this is the fallback shape to start from.',
+  },
+] as const;
+
 export const metadata: Metadata = {
   title: 'Install',
   description:
-    'Install the Nullcost plugin for Codex or Claude, or use the raw MCP server directly from any compatible client.',
+    'Install Nullcost for Codex, Claude Code, Cursor, Windsurf, VS Code, Cline, Roo Code, Gemini CLI, Zed, OpenCode, Amp, or any MCP client.',
   alternates: {
     canonical: '/install',
   },
   openGraph: {
     title: `Install ${SITE_NAME}`,
-    description: 'Install Nullcost as a plugin first, with raw MCP available as the power-user fallback.',
+    description: 'Pick your coding app and copy the matching Nullcost plugin or MCP setup.',
     url: absoluteUrl('/install'),
     type: 'article',
   },
@@ -272,6 +387,39 @@ function ClientButton({
   );
 }
 
+function ClientSetupCard({
+  name,
+  tag,
+  file,
+  config,
+  note,
+}: {
+  name: string;
+  tag: string;
+  file: string;
+  config: string;
+  note: string;
+}) {
+  return (
+    <article className={styles.clientSetupCard}>
+      <div className={styles.clientSetupHeader}>
+        <div>
+          <h3>{name}</h3>
+          <span>{file}</span>
+        </div>
+        <strong>{tag}</strong>
+      </div>
+      <p>{note}</p>
+      <div className={styles.clientSetupCommand}>
+        <pre>
+          <code>{config}</code>
+        </pre>
+        <CopyButton value={config} className={styles.overlayCopyButton} iconOnly />
+      </div>
+    </article>
+  );
+}
+
 export default function InstallPage() {
   return (
     <div className={styles.page}>
@@ -289,8 +437,8 @@ export default function InstallPage() {
               Install the <span>Nullcost plugin</span>.
             </h1>
             <p>
-              If you are new to coding tools, do not worry about MCP. Start with Step 1. If your app cannot install
-              plugins, use the manual fallback below.
+              Pick your coding app. Copy the matching setup. If your app does not support plugins, use the MCP config
+              for that app instead.
             </p>
           </section>
 
@@ -308,8 +456,26 @@ export default function InstallPage() {
 
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>Plugin-first setup</h2>
-              <span>Recommended</span>
+              <h2>Choose your coding app</h2>
+              <span>Copy one</span>
+            </div>
+
+            <p className={styles.panelIntro}>
+              Most tools use MCP, but the config wrapper changes. Replace <code>/path/to/nullcost</code> with the folder
+              where you cloned this repo.
+            </p>
+
+            <div className={styles.clientSetupGrid}>
+              {installTargets.map((target) => (
+                <ClientSetupCard key={target.name} {...target} />
+              ))}
+            </div>
+          </section>
+
+          <section className={styles.panel}>
+            <div className={styles.panelHeader}>
+              <h2>Simple fallback</h2>
+              <span>If unsure</span>
             </div>
 
             <div className={styles.stepList}>
@@ -318,10 +484,10 @@ export default function InstallPage() {
               ))}
 
               <div className={styles.divider}>
-                <span>Manual paths</span>
+                <span>Then test</span>
               </div>
 
-              {quickSteps.slice(1).map((step) => (
+              {quickSteps.slice(1, 2).map((step) => (
                 <StepCard key={step.number} {...step} />
               ))}
             </div>
@@ -362,9 +528,9 @@ export default function InstallPage() {
 
             <div className={styles.manualCard}>
               <pre>
-                <code>{genericConfig}</code>
+                <code>{mcpServersConfig}</code>
               </pre>
-              <CopyButton value={genericConfig} className={styles.overlayCopyButton} iconOnly />
+              <CopyButton value={mcpServersConfig} className={styles.overlayCopyButton} iconOnly />
             </div>
           </section>
         </div>

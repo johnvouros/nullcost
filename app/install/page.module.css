@@ -250,6 +250,67 @@
   transform: translateY(-50%);
 }
 
+.clientSetupGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.clientSetupCard {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.clientSetupHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.clientSetupHeader h3 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.clientSetupHeader span {
+  display: block;
+  margin-top: 3px;
+  color: #79828e;
+  font-size: 0.74rem;
+  line-height: 1.45;
+}
+
+.clientSetupHeader strong {
+  flex: 0 0 auto;
+  padding: 4px 7px;
+  border: 1px solid rgba(37, 206, 105, 0.18);
+  border-radius: 7px;
+  background: rgba(37, 206, 105, 0.08);
+  color: #56e88b;
+  font-family: var(--font-mono), monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.clientSetupCard p {
+  margin: 0;
+  color: #9ba4b0;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+
+.clientSetupCommand {
+  position: relative;
+}
+
 .stepList {
   display: grid;
   gap: 14px;
@@ -357,12 +418,14 @@
 
 .commandWrap,
 .manualCard,
+.clientSetupCommand,
 .promptItem {
   position: relative;
 }
 
 .commandWrap code,
-.manualCard pre {
+.manualCard pre,
+.clientSetupCommand pre {
   display: block;
   width: 100%;
   margin: 0;
@@ -467,6 +530,11 @@
 .manualCard pre {
   padding-top: 14px;
   padding-bottom: 14px;
+  color: #9ea6b2;
+}
+
+.clientSetupCommand pre {
+  max-height: 210px;
   color: #9ea6b2;
 }
 
@@ -724,8 +792,13 @@
     grid-template-columns: 1fr;
   }
 
+  .clientSetupGrid {
+    grid-template-columns: 1fr;
+  }
+
   .commandWrap code,
-  .manualCard pre {
+  .manualCard pre,
+  .clientSetupCommand pre {
     padding-right: 40px;
   }
 }

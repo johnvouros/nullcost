@@ -24,7 +24,7 @@
   <img alt="Next.js" src="https://img.shields.io/badge/Next.js-16-black?style=for-the-badge&logo=nextdotjs">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-ready-3ecf8e?style=for-the-badge&logo=supabase&logoColor=white">
   <img alt="MCP" src="https://img.shields.io/badge/MCP-server-7c3aed?style=for-the-badge">
-  <img alt="Plugin" src="https://img.shields.io/badge/Codex%20%2F%20Claude-plugin-111827?style=for-the-badge">
+  <img alt="Clients" src="https://img.shields.io/badge/Codex%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Copilot-MCP-111827?style=for-the-badge">
 </p>
 
 ---
@@ -52,7 +52,7 @@ recommendations.
 - Ask plain-English questions like "cheap hosting" or "free-tier Postgres".
 - Get DB-backed shortlists instead of hallucinated pricing guesses.
 - Keep pricing/free-tier discovery separate from your main build work.
-- Use the plugin path first, or raw MCP if your client prefers manual config.
+- Use the plugin path where supported, or raw MCP for the wider agent ecosystem.
 
 ## The Fast Path
 
@@ -62,10 +62,47 @@ Go to:
 https://nullcost.xyz/install
 ```
 
-Copy the first prompt into your AI coding app. That is the noob-friendly path.
+Pick your coding app, then copy the matching setup. That is the noob-friendly path.
 
-If your app cannot install repo plugins, use the manual MCP fallback on the same
-page. Same catalog, less friendly setup.
+If your app cannot install repo plugins, use the MCP setup for that app. Same catalog, different wrapper.
+
+## Supported Coding Apps
+
+Nullcost is plugin-enhanced for clients that support repo/local plugins, but the
+real compatibility layer is MCP. If a coding agent supports stdio MCP servers,
+it can usually use Nullcost.
+
+| Client | Best path | Config shape |
+| --- | --- | --- |
+| Codex | Plugin first, MCP fallback | Plugin prompt or `mcpServers` |
+| Claude Code | MCP | `mcpServers` |
+| Cursor | MCP | `mcpServers` |
+| Windsurf / Cascade | MCP | `mcpServers` |
+| VS Code / GitHub Copilot | MCP | `.vscode/mcp.json` with `servers` |
+| Cline | MCP | Extension MCP settings |
+| Roo Code | MCP | Extension MCP settings |
+| Gemini CLI | MCP | CLI MCP settings |
+| Zed | MCP | `context_servers` |
+| OpenCode | MCP | `mcp` local server config |
+| Amp / other MCP clients | MCP | Generic stdio MCP config |
+
+Generic MCP server core:
+
+```json
+{
+  "mcpServers": {
+    "nullcost": {
+      "command": "node",
+      "args": ["/path/to/nullcost/plugins/nullcost-catalog/scripts/run-provider-server.mjs"],
+      "env": {
+        "REFERIATE_API_BASE_URL": "https://nullcost.xyz"
+      }
+    }
+  }
+}
+```
+
+Replace `/path/to/nullcost` with the folder where you cloned this repo.
 
 ## Good Test Prompts
 
@@ -98,18 +135,6 @@ What is a good email API with a free trial?
 | MCP server | Gives coding tools searchable catalog tools. |
 | Supabase catalog | Stores providers, free-tier/free-trial flags, plans, and referral metadata. |
 | Referral router | Supports public provider links while keeping private fields server-side. |
-
-## Compatibility
-
-| Client | Best path | Notes |
-| --- | --- | --- |
-| Codex | Plugin | Preferred path when local plugins are supported. |
-| Claude / Claude Code | Plugin or MCP | Use plugin support if available; otherwise raw MCP config. |
-| Cursor / Windsurf | MCP fallback | Use manual MCP config if plugin install is not supported. |
-| Any MCP client | Raw MCP | Point it at the bundled MCP server. |
-
-Client plugin support changes fast. If the plugin path fails, the raw MCP path
-is the stable fallback.
 
 ## MCP Tools
 
@@ -234,8 +259,10 @@ referral routing data, and user data are not part of the open-source grant.
 
 ## Tags
 
-`mcp` · `codex-plugin` · `claude-plugin` · `developer-tools` · `free-tier` ·
-`supabase` · `nextjs` · `netlify` · `pricing-catalog` · `agent-tools`
+`mcp` · `codex-plugin` · `claude-code` · `cursor` · `windsurf` · `cline` ·
+`roo-code` · `gemini-cli` · `zed` · `opencode` · `developer-tools` ·
+`free-tier` · `supabase` · `nextjs` · `netlify` · `pricing-catalog` ·
+`agent-tools`
 
 ## License
 
