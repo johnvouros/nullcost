@@ -7,6 +7,8 @@ export default defineConfig([
   ...nextTs,
   globalIgnores([
     '.next/**',
+    '.netlify/**',
+    '.playwright-cli/**',
     'node_modules/**',
     'next-env.d.ts',
   ]),
