@@ -52,6 +52,10 @@ Nullcost answers from a structured catalog database and gives a compact
 shortlist. For v1, it does **not** live-browse pricing pages during normal
 recommendations.
 
+<p align="center">
+  <img src="docs/assets/nullcost-auth-recommendation-card.png" alt="Example Nullcost auth recommendation table with free-tier and paid-cliff signals">
+</p>
+
 ## Why Install It
 
 - Stop opening ten vendor tabs just to find out what is actually free.
