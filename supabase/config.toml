@@ -22,5 +22,15 @@ port = 54324
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = ["http://localhost:3000", "http://127.0.0.1:3000"]
+site_url = "https://nullcost.xyz"
+additional_redirect_urls = ["https://nullcost.xyz/auth", "https://www.nullcost.xyz/auth", "http://localhost:3000/auth", "http://127.0.0.1:3000/auth", "http://localhost:3000", "http://127.0.0.1:3000"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+max_frequency = "1m0s"
+otp_length = 8
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
