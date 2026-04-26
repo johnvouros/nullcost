@@ -271,26 +271,6 @@ function getReferralBenefit(provider: ProviderRow) {
   return '';
 }
 
-function getReferralTrustNote(provider: ProviderRow) {
-  if (hasProgram(provider)) {
-    if (provider.research_status === 'verified_program') {
-      return 'Random verified community link. Official site next to it.';
-    }
-
-    if (provider.research_status === 'quick_official_check') {
-      return 'Random checked community link. Official site next to it.';
-    }
-
-    return 'Random community link. Official site next to it.';
-  }
-
-  if (getOfficialQuickUrl(provider)) {
-    return 'Official link only.';
-  }
-
-  return '';
-}
-
 function getProviderSignals(provider: ProviderRow) {
   const icons: Array<{ kind: SignalKind; label: string }> = [];
 
@@ -993,7 +973,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
               </div>
               <p>
                 Find tools with a real free tier or free trial. Some also have referral bonuses or signup credits, so
-                Nullcost can rotate approved community codes beside the official link.
+                Nullcost can rotate approved community codes while still keeping the provider site available.
                 <span className="cb-copy-break"> Rankings stay fit-first, not affiliate-first.</span>
               </p>
             </div>
@@ -1143,9 +1123,6 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                     <SortButton label="Provider" column="name" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
                   </th>
                   <th className="cb-cell cb-cell--referral">Referral</th>
-                  <th className="cb-cell cb-cell--category cb-hide-sm">
-                    <SortButton label="Category" column="category" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
-                  </th>
                   <th className="cb-cell cb-cell--price">
                     <SortButton label="Price" column="price" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
                   </th>
@@ -1160,7 +1137,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
               <tbody>
                 {visibleProviders.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="cb-empty">
+                    <td colSpan={6} className="cb-empty">
                       <p>No rows match the current search and filter set.</p>
                     </td>
                   </tr>
@@ -1171,7 +1148,6 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                     const selected = selectedSlugs.includes(provider.slug);
                     const statusSignal = getSubmissionSourceSignal();
                     const referralBenefit = getReferralBenefit(provider);
-                    const referralTrustNote = getReferralTrustNote(provider);
                     const officialQuickUrl = getOfficialQuickUrl(provider);
                     const hasReferralRoute = hasProgram(provider);
                     const referralClassName =
@@ -1233,9 +1209,10 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                                       <a
                                         href={`/go/${provider.slug}`}
                                         className="cb-referral__text-link"
-                                        title={`Open a random community referral link for ${provider.name}`}
+                                        title={`Go to an approved community deal for ${provider.name}`}
                                       >
-                                        referral link
+                                        <span>GO TO DEAL</span>
+                                        <Glyph name="external" />
                                       </a>
                                     ) : null}
 
@@ -1245,25 +1222,17 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                         className="cb-referral__text-link cb-referral__text-link--official"
-                                        title={`Open ${provider.name} official site`}
-                                        aria-label={`Open ${provider.name} official site`}
+                                        title={`Open ${provider.name} provider site without a community code`}
+                                        aria-label={`Open ${provider.name} provider site without a community code`}
                                       >
-                                        official link
+                                        NO REF URL
                                       </a>
                                     ) : null}
 
-                                    {referralTrustNote ? (
-                                      <span className="cb-referral__meta-note" title={referralTrustNote}>
-                                        {referralTrustNote}
-                                      </span>
-                                    ) : null}
                                   </div>
                                 ) : null}
                               </div>
                             </div>
-                          </td>
-                          <td className="cb-cell cb-cell--category cb-hide-sm" title={getFacetLabel(provider)}>
-                            {getFacetLabel(provider)}
                           </td>
                           <td className="cb-cell cb-cell--price" title={getDisplayPrice(provider)}>
                             {getDisplayPrice(provider)}
@@ -1285,7 +1254,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                         </tr>
                         {expanded ? (
                           <tr className="cb-expanded-row">
-                            <td colSpan={7}>
+                            <td colSpan={6}>
                               <div className="cb-expanded">
                                 <div className="cb-expanded__grid">
                                   <section>
