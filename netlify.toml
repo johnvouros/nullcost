@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  NEXT_PUBLIC_SITE_URL = "https://nullcost.xyz"
+  SITE_URL = "https://nullcost.xyz"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"

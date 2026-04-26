@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
         ok: true,
         nextPath,
         sessionCreated: false,
-        message: 'Account created. If email confirmation is enabled locally, use Mailpit before signing in.',
+        message: 'Check your email to confirm your account, then sign in.',
       });
     }
 

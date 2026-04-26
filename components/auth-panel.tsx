@@ -55,7 +55,7 @@ export function AuthPanel({ defaultMode = 'sign-in', nextPath = '/dashboard' }: 
           return;
         }
 
-        setMessage(payload?.message || 'Account created. If email confirmation is enabled locally, use Mailpit before signing in.');
+        setMessage(payload?.message || 'Check your email to confirm your account, then sign in.');
         setMode('sign-in');
       } else {
         const response = await fetch('/api/auth/sign-in', {
