@@ -38,27 +38,6 @@ const quickSteps = [
   },
 ] as const;
 
-const appPaths = [
-  {
-    name: 'Codex',
-    label: 'Plugin first, MCP fallback.',
-    tag: 'Easiest',
-    kind: 'cpu',
-  },
-  {
-    name: 'Claude / Cursor / Windsurf',
-    label: 'Use the MCP config card for your app.',
-    tag: 'MCP',
-    kind: 'grid',
-  },
-  {
-    name: 'Cline / Roo / Zed / OpenCode',
-    label: 'Use raw MCP or the app-specific wrapper.',
-    tag: 'More',
-    kind: 'terminal',
-  },
-] as const;
-
 const promptIdeas = [
   'cheap auth service with a real free tier',
   'free tier postgres for a small Next.js SaaS',
@@ -355,38 +334,6 @@ function StepCard({
   );
 }
 
-function ClientButton({
-  kind,
-  name,
-  label,
-  tag,
-}: {
-  kind: 'cpu' | 'grid' | 'terminal';
-  name: string;
-  label: string;
-  tag: string | null;
-}) {
-  return (
-    <div className={styles.clientButton}>
-      <div className={styles.clientMeta}>
-        <div className={styles.clientIcon}>
-          <Glyph kind={kind} />
-        </div>
-        <div>
-          <div className={styles.clientNameRow}>
-            <strong>{name}</strong>
-            {tag ? <span className={styles.clientTag}>{tag}</span> : null}
-          </div>
-          <span>{label}</span>
-        </div>
-      </div>
-      <div className={styles.clientArrow}>
-        <Glyph kind="arrow" />
-      </div>
-    </div>
-  );
-}
-
 function ClientSetupCard({
   name,
   tag,
@@ -596,15 +543,6 @@ export default function InstallPage() {
                 <h3>What you get</h3>
                 <p>Free-tier and free-trial tool discovery from the same hosted catalog as this site.</p>
               </div>
-            </div>
-          </section>
-
-          <section className={styles.clientPanel}>
-            <div className={styles.sidebarHeader}>Then use your client</div>
-            <div className={styles.clientList}>
-              {appPaths.map((path) => (
-                <ClientButton key={path.name} {...path} />
-              ))}
             </div>
           </section>
 

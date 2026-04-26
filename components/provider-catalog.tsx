@@ -992,9 +992,9 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                 <span className="cb-version">beta</span>
               </div>
               <p>
-                Find tools with a real free tier or free trial, then choose either the community referral link or the
-                official site.
-                <span className="cb-copy-break"> Fast to scan, one click either way.</span>
+                Find tools with a real free tier or free trial. Some also have referral bonuses or signup credits, so
+                Nullcost can rotate approved community codes beside the official link.
+                <span className="cb-copy-break"> Rankings stay fit-first, not affiliate-first.</span>
               </p>
             </div>
 

@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://nullcost.xyz">
-    <img src="public/icon-192.png" alt="Nullcost logo" width="96" height="96">
+    <img src="docs/assets/nullcost-github-logo.svg" alt="Nullcost logo" width="112" height="112">
   </a>
 </p>
 
@@ -27,6 +27,12 @@
   <img alt="Clients" src="https://img.shields.io/badge/Codex%20%7C%20Claude%20%7C%20Cursor%20%7C%20Windsurf%20%7C%20Copilot-MCP-111827?style=for-the-badge">
 </p>
 
+<p align="center">
+  <a href="https://nullcost.xyz">
+    <img src="docs/assets/nullcost-readme-banner.png" alt="Nullcost catalog-backed free-tier developer tool discovery banner">
+  </a>
+</p>
+
 ---
 
 ## What This Is
@@ -51,8 +57,22 @@ recommendations.
 - Stop opening ten vendor tabs just to find out what is actually free.
 - Ask plain-English questions like "cheap hosting" or "free-tier Postgres".
 - Get DB-backed shortlists instead of hallucinated pricing guesses.
+- See when a provider has a community referral route next to the official link.
+- Submit your own referral or affiliate code for review when a tool offers signup credits, discounts, or bonuses.
 - Keep pricing/free-tier discovery separate from your main build work.
 - Use the plugin path where supported, or raw MCP for the wider agent ecosystem.
+
+## Community Code Rotator
+
+Some developer tools give both sides a small benefit when a new user signs up
+through a referral link or code. Nullcost supports that without turning the
+catalog into an affiliate leaderboard.
+
+- Provider ranking stays fit-first.
+- Official provider links stay visible.
+- User-submitted codes wait for review before going live.
+- Approved codes can rotate on provider pages and `/go/:provider` routes.
+- Not every provider has a bonus, and users should still check the official terms.
 
 ## The Fast Path
 
@@ -134,7 +154,7 @@ What is a good email API with a free trial?
 | Plugin | Adds Nullcost branding, routing, and no-slash-command behavior. |
 | MCP server | Gives coding tools searchable catalog tools. |
 | Supabase catalog | Stores providers, free-tier/free-trial flags, plans, and referral metadata. |
-| Referral router | Supports public provider links while keeping private fields server-side. |
+| Referral router | Rotates approved community codes while keeping official links visible. |
 
 ## MCP Tools
 

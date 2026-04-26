@@ -60,8 +60,11 @@ export default async function HomePage() {
       <ProviderCatalog providers={providers} />
 
       <div className="cb-page__support">
-        <p>Same free-entry catalog across the website, provider pages, and the Nullcost plugin.</p>
-        <Link href="/install">Install plugin</Link>
+        <p>
+          Submit your own referral or affiliate code on provider pages. Approved codes can enter the community rotator
+          when a provider offers useful signup credits, discounts, or bonuses.
+        </p>
+        <Link href="/dashboard">Add my codes</Link>
       </div>
     </div>
   );

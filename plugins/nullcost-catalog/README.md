@@ -6,6 +6,11 @@ with real free tiers and trials.
 The plugin provides the icon, prompt routing, and natural-language behavior.
 The MCP server is the engine underneath.
 
+Nullcost also tracks community referral routes where they are useful. Some tools
+offer signup credits, discounts, or bonuses when a referral code is used. Those
+links are shown beside official provider links; they do not control catalog
+ranking.
+
 By default, the plugin reads the hosted Nullcost catalog:
 
 ```text

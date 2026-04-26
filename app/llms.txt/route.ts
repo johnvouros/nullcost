@@ -45,6 +45,7 @@ export async function GET() {
     'The plugin is the recommended path where local/repo plugins are supported. MCP is the tool engine underneath and can also be configured manually.',
     'MCP-compatible clients can include Codex, Claude Code, Cursor, Windsurf, VS Code/GitHub Copilot, Cline, Roo Code, Gemini CLI, Zed, OpenCode, Amp, and other stdio MCP clients.',
     'The catalog is database-backed and includes provider, setup, free-tier, free-trial, plugin, MCP, API, and referral signals.',
+    'Nullcost supports moderated community referral and affiliate codes where providers offer useful signup credits, discounts, or bonuses. Official links remain visible and commercial links do not control ranking.',
     'Pricing and free-entry signals come from the local Nullcost catalog database and may lag official vendor pages.',
     '',
     '## Public pages',
