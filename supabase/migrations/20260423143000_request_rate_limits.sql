@@ -8,6 +8,8 @@ create table if not exists public.request_rate_limits (
     primary key (scope, bucket_key, window_start)
 );
 
+alter table public.request_rate_limits enable row level security;
+
 drop trigger if exists request_rate_limits_set_updated_at on public.request_rate_limits;
 create trigger request_rate_limits_set_updated_at
 before update on public.request_rate_limits

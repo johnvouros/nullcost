@@ -246,6 +246,27 @@ NULLCOST_REVIEWER_EMAILS
 
 Never commit production environment values. Store them in Netlify and Supabase.
 
+### Supabase Email Confirmation
+
+For public signups, keep the v1 flow simple: users confirm their email, return
+to Nullcost, then sign in normally.
+
+In the Supabase Dashboard:
+
+1. Go to `Authentication` -> `Sign In / Providers` -> `Email`.
+2. Enable email confirmation.
+3. Go to `Authentication` -> `URL Configuration`.
+4. Set `Site URL` to `https://nullcost.xyz`.
+5. Add redirect URLs:
+   - `https://nullcost.xyz/auth`
+   - `http://localhost:3000/auth`
+   - `https://www.nullcost.xyz/auth` only if `www` is active
+
+The signup route already sends confirmation links to `/auth` with
+`emailRedirectTo`, so the production domain must stay allowed in Supabase.
+Supabase's default mailer is fine for launch, but higher signup volume should
+move to custom SMTP.
+
 ## Versioning
 
 Nullcost uses SemVer. The current version lives in:

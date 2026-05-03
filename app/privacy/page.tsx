@@ -56,8 +56,8 @@ export default function PrivacyPage() {
       <section>
         <h2>Public Content</h2>
         <p>
-          Provider pages, public referral profiles, and approved referral entries may be visible to anyone. Only submit
-          information you are comfortable making public.
+          Public referral profiles and approved referral entries may be visible to anyone. Only submit information you
+          are comfortable making public.
         </p>
       </section>
 

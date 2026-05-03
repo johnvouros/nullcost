@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ProviderProfileShell } from '@/components/provider-profile-shell';
 import { getCurrentAccount } from '@/lib/auth/account';
-import { SITE_NAME, absoluteUrl, buildProviderDescription } from '@/lib/site';
 import {
   chooseBestStartingPlan,
   getDefaultPlanSelectionIntent,
@@ -16,65 +15,15 @@ import { saveProviderReferralCode } from './actions';
 
 export const dynamic = 'force-dynamic';
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ slug: string }> | { slug: string };
-}): Promise<Metadata> {
-  const { slug } = await params;
-  const provider = await getProviderBySlug(slug);
-
-  if (!provider) {
-    return {
-      title: 'Provider not found',
-      robots: {
-        index: false,
-        follow: false,
-      },
-    };
-  }
-
-  const description = buildProviderDescription({
-    name: provider.name,
-    category: provider.category,
-    subcategory: provider.subcategory,
-    useCase: provider.use_case,
-  });
-  const canonicalPath = `/providers/${provider.slug}`;
-
+export async function generateMetadata(): Promise<Metadata> {
   return {
-    title: provider.name,
-    description,
-    alternates: {
-      canonical: canonicalPath,
-    },
-    openGraph: {
-      title: `${provider.name} on ${SITE_NAME}`,
-      description,
-      url: absoluteUrl(canonicalPath),
-      type: 'article',
-    },
-    twitter: {
-      card: 'summary',
-      title: `${provider.name} on ${SITE_NAME}`,
-      description,
-    },
-    keywords: [
-      provider.name,
-      provider.category ?? '',
-      provider.subcategory ?? '',
-      provider.use_case ?? '',
-      'developer tool provider',
-    ].filter(Boolean),
+    title: 'Provider profiles disabled',
     robots: {
-      index: true,
+      index: false,
       follow: false,
       googleBot: {
-        index: true,
+        index: false,
         follow: false,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-        'max-video-preview': -1,
       },
     },
   };
@@ -89,6 +38,9 @@ export default async function ProviderDetailPage({
     | Promise<Record<string, string | string[] | undefined>>
     | Record<string, string | string[] | undefined>;
 }) {
+  // Temporarily disabled for launch: provider detail pages are not part of the public site surface.
+  notFound();
+
   const [{ slug }, resolvedSearchParams] = await Promise.all([params, searchParams ?? {}]);
   const provider = await getProviderBySlug(slug);
 

@@ -149,24 +149,19 @@ export function getProviderFallbackTarget(
   preference: RouterFallbackPreference,
   requestUrl?: string,
 ) {
-  const providerPageUrl = requestUrl
-    ? new URL(`/providers/${provider.slug}`, requestUrl).toString()
-    : `/providers/${provider.slug}`;
-
   const candidates = {
     official: provider.website,
     docs: provider.docs_url,
     pricing: provider.pricing_url,
     signup: provider.signup_url,
-    provider_page: providerPageUrl,
   } as const;
 
   const orderMap: Record<RouterFallbackPreference, Array<keyof typeof candidates>> = {
-    official: ['official', 'docs', 'pricing', 'signup', 'provider_page'],
-    docs: ['docs', 'official', 'pricing', 'signup', 'provider_page'],
-    pricing: ['pricing', 'official', 'docs', 'signup', 'provider_page'],
-    signup: ['signup', 'official', 'docs', 'pricing', 'provider_page'],
-    provider_page: ['provider_page', 'official', 'docs', 'pricing', 'signup'],
+    official: ['official', 'docs', 'pricing', 'signup'],
+    docs: ['docs', 'official', 'pricing', 'signup'],
+    pricing: ['pricing', 'official', 'docs', 'signup'],
+    signup: ['signup', 'official', 'docs', 'pricing'],
+    provider_page: ['official', 'docs', 'pricing', 'signup'],
   };
 
   for (const key of orderMap[preference]) {
@@ -180,17 +175,15 @@ export function getProviderFallbackTarget(
               ? 'Docs'
               : key === 'pricing'
                 ? 'Pricing'
-                : key === 'signup'
-                  ? 'Signup'
-                  : 'Provider page',
+                : 'Signup',
         url,
       };
     }
   }
 
   return {
-    label: 'Provider page',
-    url: providerPageUrl,
+    label: 'Catalog home',
+    url: requestUrl ? new URL('/', requestUrl).toString() : '/',
   };
 }
 

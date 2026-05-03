@@ -4,17 +4,19 @@ import argparse
 import asyncio
 import csv
 import re
+from datetime import datetime
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Tuple
+from zoneinfo import ZoneInfo
 from urllib.parse import urljoin, urlparse
 
 import httpx
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-TODAY = "2026-04-21"
+TODAY = datetime.now(ZoneInfo("Australia/Brisbane")).date().isoformat()
 
 NEW_FIELDS = [
     "pricing_url",
@@ -49,6 +51,17 @@ PRESERVE_FIELDS = [
     "pricing_confidence",
     "pricing_notes",
     "pricing_normalized_at",
+]
+
+BOOLEAN_PRESERVE_FIELDS = [
+    "free_tier",
+    "free_trial",
+    "contact_sales_only",
+    "open_source",
+    "api_available",
+    "cli_available",
+    "mcp_available",
+    "user_discount_available",
 ]
 
 BASE_FIELDS = [
@@ -443,31 +456,33 @@ async def enrich_row(row: Dict[str, str], scanner: SiteScanner) -> Dict[str, str
     commission_model = infer_commission_model(program_text) if ("affiliate" in program_type or "referral" in program_type) else ""
     user_discount_available = detect_user_discount(program_text) if ("affiliate" in program_type or "referral" in program_type) else truthy_unknown()
 
-    row.update(
-        {
-            "pricing_url": pricing_url or "",
-            "docs_url": docs_url or "",
-            "signup_url": signup_url or "",
-            "pricing_model": pricing_model,
-            "starting_price": starting_price,
-            "free_tier": free_tier,
-            "free_trial": free_trial,
-            "contact_sales_only": contact_sales_only,
-            "deployment_model": deployment_model,
-            "open_source": open_source,
-            "api_available": api_available,
-            "cli_available": cli_available,
-            "mcp_available": mcp_available,
-            "setup_friction": setup_friction,
-            "target_customer": target_customer,
-            "program_url": program_url,
-            "program_type": program_type,
-            "commission_model": commission_model,
-            "user_discount_available": user_discount_available,
-            "last_pricing_checked": TODAY if homepage else "",
-            "last_program_checked": TODAY if (homepage or program_page) else "",
-        }
-    )
+    updates = {
+        "pricing_url": pricing_url or "",
+        "docs_url": docs_url or "",
+        "signup_url": signup_url or "",
+        "pricing_model": pricing_model,
+        "starting_price": starting_price,
+        "free_tier": free_tier,
+        "free_trial": free_trial,
+        "contact_sales_only": contact_sales_only,
+        "deployment_model": deployment_model,
+        "open_source": open_source,
+        "api_available": api_available,
+        "cli_available": cli_available,
+        "mcp_available": mcp_available,
+        "setup_friction": setup_friction,
+        "target_customer": target_customer,
+        "program_url": program_url,
+        "program_type": program_type,
+        "commission_model": commission_model,
+        "user_discount_available": user_discount_available,
+        "last_pricing_checked": TODAY if homepage else "",
+        "last_program_checked": TODAY if (homepage or program_page) else "",
+    }
+    for field in BOOLEAN_PRESERVE_FIELDS:
+        if row.get(field) in {"yes", "no"} and updates.get(field) == "unknown":
+            updates[field] = row[field]
+    row.update(updates)
     return row
 
 

@@ -28,19 +28,6 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const providers = await getProviderRows({ limit: HOME_PROVIDER_LIMIT });
-  const itemListJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'ItemList',
-    name: `${SITE_NAME} provider catalog`,
-    itemListOrder: 'https://schema.org/ItemListOrderAscending',
-    numberOfItems: providers.length,
-    itemListElement: providers.slice(0, 12).map((provider, index) => ({
-      '@type': 'ListItem',
-      position: index + 1,
-      url: absoluteUrl(`/providers/${provider.slug}`),
-      name: provider.name,
-    })),
-  };
   const websiteJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
@@ -54,7 +41,7 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
-          __html: JSON.stringify([websiteJsonLd, itemListJsonLd]),
+          __html: JSON.stringify(websiteJsonLd),
         }}
       />
       <ProviderCatalog providers={providers} />

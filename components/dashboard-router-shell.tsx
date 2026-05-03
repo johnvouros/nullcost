@@ -139,7 +139,6 @@ export function DashboardRouterShell({
             </div>
             <div className={styles.actions}>
               <button type="submit" className={styles.buttonPrimary}>Open provider</button>
-              <Link href={`/providers/${workspace.provider.slug}`} className={styles.linkButton}>Provider page</Link>
             </div>
           </form>
 
@@ -183,7 +182,6 @@ export function DashboardRouterShell({
                 <option value="docs">Docs</option>
                 <option value="pricing">Pricing</option>
                 <option value="signup">Signup</option>
-                <option value="provider_page">Provider page</option>
               </select>
             </label>
 

@@ -258,9 +258,9 @@ export function ReferralProfileShell({ directory, managementAction }: ReferralPr
                 <div key={entry.id} className={styles.row}>
                   <span className={styles.providerCell}>
                     {entry.provider ? (
-                      <Link href={`/providers/${entry.provider.slug}`} className={styles.rowLink}>
+                      <span className={styles.rowLink}>
                         {entry.provider.name}
-                      </Link>
+                      </span>
                     ) : (
                       'Provider missing'
                     )}

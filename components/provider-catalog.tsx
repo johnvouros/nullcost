@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Fragment, startTransition, useDeferredValue, useMemo, useRef, useState } from 'react';
+import { Fragment, startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
   getDisplayPrice,
   getFreeEntryLabel,
@@ -11,6 +11,8 @@ import {
   getStartPathSummary,
   hasProgram,
   isYes,
+  getPlanPriceText,
+  type ProviderPlanRow,
   type ProviderRow,
 } from '@/lib/providers';
 
@@ -34,7 +36,123 @@ type SignalKind =
   | 'seed'
   | 'unknown';
 
+type ProviderDetailResponse = {
+  provider: ProviderRow;
+  plans: ProviderPlanRow[];
+  bestStartingPlan: ProviderPlanRow | null;
+};
+
 const PAGE_SIZE = 14;
+
+const BENEFIT_DEMO = {
+  name: 'Acme Hosting',
+  slug: 'acme-hosting',
+  host: 'example listing',
+  summary: 'Example hosting platform with a free starter path, paid-plan trials, and deal formats that may or may not stack.',
+  benefits: [
+    {
+      label: 'Free forever',
+      plan: 'Starter',
+      detail: 'Always-free starter plan for hobby apps.',
+      window: 'Ongoing',
+      action: 'Use direct signup',
+      offer: 'Direct signup',
+      offerNote: 'How to claim: signup. User gets: free forever. Referrer gets: none. Stack: n/a.',
+      claim: 'Signup',
+      userGets: 'Free forever',
+      referrerGets: 'None',
+      stack: 'N/A',
+      kind: 'free-tier' as SignalKind,
+    },
+    {
+      label: '30-day trial',
+      plan: 'Basic',
+      detail: 'Trial access to the first paid hosting plan.',
+      window: '30 days',
+      action: 'Start trial',
+      offer: 'Trial',
+      offerNote: 'How to claim: signup. User gets: 30 days. Referrer gets: none. Stack: no.',
+      claim: 'Signup',
+      userGets: '30 days',
+      referrerGets: 'None',
+      stack: 'No',
+      kind: 'free-trial' as SignalKind,
+    },
+    {
+      label: '7-day Pro trial',
+      plan: 'Pro',
+      detail: 'Short trial for higher build limits and team features.',
+      window: '7 days',
+      action: 'Compare limits',
+      offer: 'Trial',
+      offerNote: 'How to claim: signup. User gets: 7 days. Referrer gets: none. Stack: no.',
+      claim: 'Signup',
+      userGets: '7 days',
+      referrerGets: 'None',
+      stack: 'No',
+      kind: 'free-trial' as SignalKind,
+    },
+    {
+      label: 'Apr 2026 code',
+      plan: 'Any paid plan',
+      detail: 'Could be a coupon or a referral code. Show the user bonus first.',
+      window: 'April 2026',
+      action: 'Go to deal',
+      offer: 'Offer code',
+      offerNote: 'How to claim: code. User gets: $5 credit. Referrer gets: $5 credit. Stack: unknown.',
+      claim: 'Code',
+      userGets: '$5 credit',
+      referrerGets: '$5 credit',
+      stack: 'Unknown',
+      kind: 'user-discount' as SignalKind,
+    },
+    {
+      label: 'Affiliate link',
+      plan: 'Pro',
+      detail: 'Tracked partner link where the user may not get a special bonus.',
+      window: 'Ongoing',
+      action: 'Open link',
+      offer: 'Affiliate',
+      offerNote: 'How to claim: link. User gets: none or unknown. Referrer gets: commission or credit. Stack: maybe with code.',
+      claim: 'Link',
+      userGets: 'None / unknown',
+      referrerGets: 'Commission or credit',
+      stack: 'Maybe',
+      kind: 'program' as SignalKind,
+    },
+    {
+      label: 'Link + code',
+      plan: 'Pro',
+      detail: 'Affiliate link gets the user in, then a code may still be needed during signup.',
+      window: 'Ongoing',
+      action: 'Open link',
+      offer: 'Link + code',
+      offerNote: 'How to claim: link first, code second if required. User gets: $10 credit. Referrer gets: commission or credit. Stack: maybe.',
+      claim: 'Link + code',
+      userGets: '$10 credit',
+      referrerGets: 'Commission or credit',
+      stack: 'Maybe',
+      kind: 'program' as SignalKind,
+    },
+    {
+      label: 'Trial + code',
+      plan: 'Basic',
+      detail: 'A free trial may still accept a code for extra credit or a longer window.',
+      window: '7 days + code',
+      action: 'Check terms',
+      offer: 'Trial + code',
+      offerNote: 'How to claim: signup plus code if allowed. User gets: 7 days + bonus credit. Referrer gets: unknown. Stack: unknown.',
+      claim: 'Signup + code',
+      userGets: '7 days + bonus credit',
+      referrerGets: 'Unknown',
+      stack: 'Unknown',
+      kind: 'free-trial' as SignalKind,
+    },
+  ],
+};
+
+const ROTATION_TOOLTIP =
+  'Submit a code, referral, affiliate, or deal link. Approved entries can rotate through Nullcost deal routes when users choose a community offer; rankings stay fit-first.';
 
 const surfaceFilters: Array<{ value: SurfaceFilter; label: string }> = [
   { value: 'all', label: 'All tools' },
@@ -239,36 +357,63 @@ function getRouteLabel(provider: ProviderRow) {
   return 'Official fallback';
 }
 
-function getOfficialQuickUrl(provider: ProviderRow) {
-  return provider.website || provider.docs_url || provider.pricing_url || provider.signup_url || null;
+function humanize(value: string | null | undefined) {
+  return normalize(value)
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
-function getReferralSummary(provider: ProviderRow) {
-  const explicit = normalize(provider.program_notes) || normalize(provider.pricing_notes);
+function getProviderInfoSummary(provider: ProviderRow) {
+  const service = normalize(provider.use_case) || humanize(provider.subcategory) || humanize(provider.category) || 'Developer service';
+  const entry = getFreeEntryLabel(provider);
+  const setup = lower(provider.setup_friction);
+  const setupText = setup && setup !== 'unknown' ? ` ${humanize(setup)} setup.` : '';
 
-  if (explicit) {
-    return explicit;
-  }
-
-  if (provider.user_discount_available === 'yes') {
-    return 'User discount available';
-  }
-
-  return '';
+  return `${service}. ${entry}.${setupText}`;
 }
 
-function getReferralBenefit(provider: ProviderRow) {
-  const summary = getReferralSummary(provider);
-
-  if (summary) {
-    return summary;
+function getPlanBenefitKind(plan: ProviderPlanRow): SignalKind {
+  if (plan.plan_type === 'free') {
+    return 'free-tier';
   }
 
-  if (hasProgram(provider)) {
-    return 'Community referral route available';
+  if (plan.trial_available) {
+    return 'free-trial';
   }
 
-  return '';
+  return 'paid-entry';
+}
+
+function getPlanBenefitLabel(plan: ProviderPlanRow): string {
+  if (plan.plan_type === 'free') {
+    return 'Free tier';
+  }
+
+  if (plan.trial_available) {
+    return 'Free trial';
+  }
+
+  return 'Free entry';
+}
+
+function getPlanWindowLabel(plan: ProviderPlanRow): string {
+  return normalize(plan.price_label) || (plan.plan_type === 'free' ? 'Free forever' : plan.trial_available ? 'Trial available' : 'Included');
+}
+
+function getPlanActionLabel(plan: ProviderPlanRow): string {
+  if (plan.plan_type === 'free') {
+    return 'Open plan';
+  }
+
+  if (plan.trial_available) {
+    return 'Start trial';
+  }
+
+  return 'Open link';
+}
+
+function getPlanActionUrl(provider: ProviderRow, plan: ProviderPlanRow): string {
+  return normalize(plan.official_url) || normalize(plan.source_url) || normalize(provider.signup_url) || normalize(provider.website);
 }
 
 function getProviderSignals(provider: ProviderRow) {
@@ -656,6 +801,212 @@ function StatusPill({
   );
 }
 
+function ProviderExpandedRow({
+  provider,
+  statusSignal,
+  expanded,
+}: {
+  provider: ProviderRow;
+  statusSignal: { kind: SignalKind; label: string; title: string };
+  expanded: boolean;
+}) {
+  const [detail, setDetail] = useState<ProviderDetailResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const loadedSlugRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!expanded || loadedSlugRef.current === provider.slug) {
+      return;
+    }
+
+    const controller = new AbortController();
+    let active = true;
+    setLoading(true);
+    setError(null);
+
+    fetch(`/api/providers/${encodeURIComponent(provider.slug)}`, {
+      signal: controller.signal,
+      cache: 'no-store',
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Failed to load provider detail (${response.status})`);
+        }
+
+        return (await response.json()) as ProviderDetailResponse;
+      })
+      .then((payload) => {
+        if (!active) {
+          return;
+        }
+
+        loadedSlugRef.current = provider.slug;
+        setDetail(payload);
+      })
+      .catch((fetchError: unknown) => {
+        if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
+          return;
+        }
+
+        if (active) {
+          setError('Plan rows could not be loaded right now.');
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [expanded, provider.slug]);
+
+  const plans = detail?.plans ?? [];
+  const bestStartingPlan = detail?.bestStartingPlan ?? null;
+  const planRows = plans.slice(0, 5);
+  const extraPlanCount = Math.max(0, plans.length - planRows.length);
+
+  return (
+    <tr className="cb-expanded-row">
+      <td colSpan={6}>
+        <div className="cb-expanded">
+          {plans.length > 0 ? (
+            <div className="cb-expanded__benefit-stack">
+              <div className="cb-expanded__benefit-title cb-expanded__benefit-title--provider">
+                <strong>{plans.length > 1 ? 'Multiple free-entry paths' : 'Free-entry path'}</strong>
+                {bestStartingPlan ? (
+                  <span title={`Best start: ${bestStartingPlan.name} · ${getPlanPriceText(bestStartingPlan)}`}>
+                    Best start: {bestStartingPlan.name} · {getPlanPriceText(bestStartingPlan)}
+                  </span>
+                ) : null}
+              </div>
+              <table className="cb-benefit-subtable cb-benefit-subtable--provider">
+                <thead>
+                  <tr>
+                    <th>Benefit</th>
+                    <th>Plan</th>
+                    <th>What it means</th>
+                    <th>Window</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {planRows.map((plan) => {
+                    const actionUrl = getPlanActionUrl(provider, plan);
+                    const isBestPlan = Boolean(bestStartingPlan && bestStartingPlan.id === plan.id);
+
+                    return (
+                      <tr key={`${provider.slug}-${plan.slug}`} className={isBestPlan ? 'cb-benefit-subtable__best' : undefined}>
+                        <td>
+                          <SignalTextBadge kind={getPlanBenefitKind(plan)} label={getPlanBenefitLabel(plan)} />
+                        </td>
+                        <td>{plan.name}</td>
+                        <td>{getFreeEntrySummary(provider, plan)}</td>
+                        <td>{getPlanWindowLabel(plan)}</td>
+                        <td>
+                          {actionUrl ? (
+                            <a href={actionUrl} target="_blank" rel="nofollow noopener noreferrer">
+                              {getPlanActionLabel(plan)}
+                            </a>
+                          ) : (
+                            <span className="cb-muted">No link</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {extraPlanCount > 0 ? (
+                    <tr>
+                      <td>
+                        <SignalTextBadge kind="unknown" label={`+${extraPlanCount} more`} />
+                      </td>
+                      <td colSpan={4}>More free-entry plans were captured for this provider.</td>
+                    </tr>
+                  ) : null}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
+
+          {loading && plans.length === 0 ? <p className="cb-expanded__hint">Loading plan rows from the live API…</p> : null}
+          {error ? <p className="cb-expanded__hint cb-expanded__hint--error">{error}</p> : null}
+
+          <div className="cb-expanded__grid">
+            <section>
+              <p className="cb-kicker">Free start</p>
+              <h4>{getFreeEntryLabel(provider)}</h4>
+              <p className="cb-panel__text">{getFreeEntrySummary(provider, bestStartingPlan)}</p>
+              <div className="cb-link-row">
+                <a href={`/go/${provider.slug}`}>{getRouteLabel(provider)}</a>
+                {provider.signup_url ? (
+                  <a href={provider.signup_url} target="_blank" rel="nofollow noopener noreferrer">
+                    Signup
+                  </a>
+                ) : null}
+                {provider.website ? (
+                  <a href={provider.website} target="_blank" rel="nofollow noopener noreferrer">
+                    Official site
+                  </a>
+                ) : null}
+                {provider.pricing_url ? (
+                  <a href={provider.pricing_url} target="_blank" rel="nofollow noopener noreferrer">
+                    Pricing
+                  </a>
+                ) : null}
+                {provider.docs_url ? (
+                  <a href={provider.docs_url} target="_blank" rel="nofollow noopener noreferrer">
+                    Docs
+                  </a>
+                ) : null}
+              </div>
+            </section>
+
+            <section>
+              <p className="cb-kicker">Fit</p>
+              <dl className="cb-expanded__list">
+                <div>
+                  <dt>Best for</dt>
+                  <dd>{getProviderFitSummary(provider, bestStartingPlan)}</dd>
+                </div>
+                <div>
+                  <dt>Deployment</dt>
+                  <dd>{provider.deployment_model || 'Not captured'}</dd>
+                </div>
+                <div>
+                  <dt>Getting started</dt>
+                  <dd>{getStartPathSummary(provider)}</dd>
+                </div>
+              </dl>
+            </section>
+
+            <section>
+              <p className="cb-kicker">Submitted by</p>
+              <dl className="cb-expanded__list">
+                <div>
+                  <dt>Source</dt>
+                  <dd>{statusSignal.label}</dd>
+                </div>
+                <div>
+                  <dt>Catalog check</dt>
+                  <dd>{getResearchLabel(provider.research_status)}</dd>
+                </div>
+                <div>
+                  <dt>Community link</dt>
+                  <dd>{hasProgram(provider) ? 'Available' : 'Not available yet'}</dd>
+                </div>
+              </dl>
+            </section>
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 function SortButton({
   label,
   column,
@@ -688,6 +1039,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
   const [sortKey, setSortKey] = useState<SortKey>('signals');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
   const [expandedSlug, setExpandedSlug] = useState<string | null>(null);
+  const [demoExpanded, setDemoExpanded] = useState(true);
   const [selectedSlugs, setSelectedSlugs] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
@@ -736,6 +1088,7 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
   const safePage = Math.min(page, pageCount);
   const startIndex = (safePage - 1) * PAGE_SIZE;
   const visibleProviders = filteredProviders.slice(startIndex, startIndex + PAGE_SIZE);
+  const showBenefitDemo = safePage === 1;
 
   const selectedProviders = useMemo(() => {
     const lookup = new Set(selectedSlugs);
@@ -1122,10 +1475,8 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                   <th className="cb-cell cb-cell--provider">
                     <SortButton label="Provider" column="name" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
                   </th>
-                  <th className="cb-cell cb-cell--referral">Referral</th>
-                  <th className="cb-cell cb-cell--price">
-                    <SortButton label="Price" column="price" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
-                  </th>
+                  <th className="cb-cell cb-cell--details">Info</th>
+                  <th className="cb-cell cb-cell--more">More</th>
                   <th className="cb-cell cb-cell--signals cb-hide-lg">
                     <SortButton label="Signals" column="signals" sortKey={sortKey} direction={sortDirection} onSort={handleSort} />
                   </th>
@@ -1135,201 +1486,194 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                 </tr>
               </thead>
               <tbody>
-                {visibleProviders.length === 0 ? (
+                {visibleProviders.length === 0 && !showBenefitDemo ? (
                   <tr>
                     <td colSpan={6} className="cb-empty">
                       <p>No rows match the current search and filter set.</p>
                     </td>
                   </tr>
                 ) : (
-                  visibleProviders.map((provider) => {
-                    const expanded = expandedSlug === provider.slug;
-                    const signals = getProviderSignals(provider);
-                    const selected = selectedSlugs.includes(provider.slug);
-                    const statusSignal = getSubmissionSourceSignal();
-                    const referralBenefit = getReferralBenefit(provider);
-                    const officialQuickUrl = getOfficialQuickUrl(provider);
-                    const hasReferralRoute = hasProgram(provider);
-                    const referralClassName =
-                      referralBenefit || hasReferralRoute || officialQuickUrl
-                        ? 'cb-referral'
-                        : 'cb-referral cb-referral--empty';
-                    const hostname = toHostname(provider.website || provider.docs_url || provider.pricing_url);
-
-                    return (
-                      <Fragment key={provider.slug}>
-                        <tr key={provider.slug} className={expanded ? 'cb-row cb-row--expanded' : 'cb-row'}>
+                  <>
+                    {showBenefitDemo ? (
+                      <Fragment>
+                        <tr className={demoExpanded ? 'cb-row cb-row--expanded cb-row--demo' : 'cb-row cb-row--demo'}>
                           <td className="cb-cell cb-cell--checkbox">
-                            <input
-                              type="checkbox"
-                              checked={selected}
-                              onChange={() => toggleCompare(provider.slug)}
-                              aria-label={`Select ${provider.name} for compare`}
-                            />
+                            <input type="checkbox" disabled aria-label="Example row is not selectable for compare" />
                           </td>
                           <td className="cb-cell cb-cell--provider">
-                            <button
-                              type="button"
-                              className={expanded ? 'cb-expander cb-expander--open' : 'cb-expander'}
-                              onClick={() => setExpandedSlug(expanded ? null : provider.slug)}
-                              aria-label={expanded ? `Collapse ${provider.name}` : `Expand ${provider.name}`}
-                            >
-                              ▸
-                            </button>
                             <div className="cb-provider">
-                              <Link href={`/providers/${provider.slug}`} className="cb-provider__name">
-                                {provider.name}
-                              </Link>
-                              {hostname ? <span className="cb-provider__host">{hostname}</span> : null}
+                              <span className="cb-provider__name">{BENEFIT_DEMO.name}</span>
+                              <span className="cb-provider__host">{BENEFIT_DEMO.host}</span>
                             </div>
                           </td>
-                          <td className="cb-cell cb-cell--referral">
-                            <div className={referralClassName}>
-                              {hasReferralRoute ? (
-                                <a
-                                  href={`/go/${provider.slug}`}
-                                  className="cb-referral__route"
-                                  title={`Open ${provider.name} referral route`}
-                                  aria-label={`Open ${provider.name} referral route`}
-                                >
-                                  <Glyph name="shuffle" />
-                                </a>
-                              ) : null}
-
-                              <div className="cb-referral__content">
-                                {referralBenefit ? (
-                                  <span className="cb-referral__summary" title={referralBenefit}>
-                                    {referralBenefit}
+                          <td className="cb-cell cb-cell--details">
+                            <div className="cb-details">
+                              <span className="cb-details__summary" title={BENEFIT_DEMO.summary}>
+                                {BENEFIT_DEMO.summary}
+                              </span>
+                              <Link href="/dashboard" className="cb-details__submit" title={ROTATION_TOOLTIP}>
+                                Submit code / referral / affiliate / deal link
+                              </Link>
+                              <div className="cb-benefit-chips" aria-label="Example benefits">
+                                {BENEFIT_DEMO.benefits.map((benefit) => (
+                                  <span key={`${BENEFIT_DEMO.slug}-${benefit.label}`} className="cb-benefit-chip">
+                                    {benefit.label}
                                   </span>
-                                ) : null}
-
-                                {(hasReferralRoute || officialQuickUrl) ? (
-                                  <div className="cb-referral__meta">
-                                    {hasReferralRoute ? (
-                                      <a
-                                        href={`/go/${provider.slug}`}
-                                        className="cb-referral__text-link"
-                                        title={`Go to an approved community deal for ${provider.name}`}
-                                      >
-                                        <span>GO TO DEAL</span>
-                                        <Glyph name="external" />
-                                      </a>
-                                    ) : null}
-
-                                    {officialQuickUrl ? (
-                                      <a
-                                        href={officialQuickUrl}
-                                        target="_blank"
-                                        rel="nofollow noopener noreferrer"
-                                        className="cb-referral__text-link cb-referral__text-link--official"
-                                        title={`Open ${provider.name} provider site without a community code`}
-                                        aria-label={`Open ${provider.name} provider site without a community code`}
-                                      >
-                                        NO REF URL
-                                      </a>
-                                    ) : null}
-
-                                  </div>
-                                ) : null}
+                                ))}
                               </div>
                             </div>
                           </td>
-                          <td className="cb-cell cb-cell--price" title={getDisplayPrice(provider)}>
-                            {getDisplayPrice(provider)}
+                          <td className="cb-cell cb-cell--more">
+                            <button
+                              type="button"
+                              className={demoExpanded ? 'cb-more-button cb-more-button--open' : 'cb-more-button'}
+                              onClick={() => setDemoExpanded((current) => !current)}
+                              title={demoExpanded ? 'Hide benefit details' : 'Show benefit details'}
+                              aria-label={demoExpanded ? `Collapse ${BENEFIT_DEMO.name}` : `Expand ${BENEFIT_DEMO.name}`}
+                            >
+                              ▸
+                            </button>
                           </td>
                           <td className="cb-cell cb-cell--signals cb-hide-lg">
                             <div className="cb-icon-list">
-                              {signals.length > 0 ? (
-                                signals.map((signal) => (
-                                  <SignalTextBadge key={`${provider.slug}-${signal.kind}`} kind={signal.kind} label={signal.label} />
-                                ))
-                              ) : (
-                                <span className="cb-muted">No flags</span>
-                              )}
+                              <SignalTextBadge kind="free-tier" label="Free tier" />
+                              <SignalTextBadge kind="free-trial" label="Trial" />
+                              <SignalTextBadge kind="user-discount" label="Coupon" />
                             </div>
                           </td>
                           <td className="cb-cell cb-cell--status cb-hide-sm">
-                            <StatusPill {...statusSignal} />
+                            <StatusPill kind="seed" label="Example" title="Demo row for testing multi-benefit layout only" />
                           </td>
                         </tr>
-                        {expanded ? (
-                          <tr className="cb-expanded-row">
+
+                        {demoExpanded ? (
+                          <tr className="cb-expanded-row cb-expanded-row--demo">
                             <td colSpan={6}>
-                              <div className="cb-expanded">
-                                <div className="cb-expanded__grid">
-                                  <section>
-                                    <p className="cb-kicker">Free start</p>
-                                    <h4>{getFreeEntryLabel(provider)}</h4>
-                                    <p className="cb-panel__text">{getFreeEntrySummary(provider)}</p>
-                                    <div className="cb-link-row">
-                                      <Link href={`/providers/${provider.slug}`}>Provider profile</Link>
-                                      <a href={`/go/${provider.slug}`}>{getRouteLabel(provider)}</a>
-                                      {provider.signup_url ? (
-                                        <a href={provider.signup_url} target="_blank" rel="nofollow noopener noreferrer">
-                                          Signup
-                                        </a>
-                                      ) : null}
-                                      {provider.website ? (
-                                        <a href={provider.website} target="_blank" rel="nofollow noopener noreferrer">
-                                          Official site
-                                        </a>
-                                      ) : null}
-                                      {provider.pricing_url ? (
-                                        <a href={provider.pricing_url} target="_blank" rel="nofollow noopener noreferrer">
-                                          Pricing
-                                        </a>
-                                      ) : null}
-                                      {provider.docs_url ? (
-                                        <a href={provider.docs_url} target="_blank" rel="nofollow noopener noreferrer">
-                                          Docs
-                                        </a>
-                                      ) : null}
-                                    </div>
-                                  </section>
-
-                                  <section>
-                                    <p className="cb-kicker">Fit</p>
-                                    <dl className="cb-expanded__list">
-                                      <div>
-                                        <dt>Best for</dt>
-                                        <dd>{getProviderFitSummary(provider)}</dd>
-                                      </div>
-                                      <div>
-                                        <dt>Deployment</dt>
-                                        <dd>{provider.deployment_model || 'Not captured'}</dd>
-                                      </div>
-                                      <div>
-                                        <dt>Getting started</dt>
-                                        <dd>{getStartPathSummary(provider)}</dd>
-                                      </div>
-                                    </dl>
-                                  </section>
-
-                                  <section>
-                                    <p className="cb-kicker">Submitted by</p>
-                                    <dl className="cb-expanded__list">
-                                      <div>
-                                        <dt>Source</dt>
-                                        <dd>{statusSignal.label}</dd>
-                                      </div>
-                                      <div>
-                                        <dt>Catalog check</dt>
-                                        <dd>{getResearchLabel(provider.research_status)}</dd>
-                                      </div>
-                                      <div>
-                                        <dt>Community link</dt>
-                                        <dd>{hasProgram(provider) ? 'Available' : 'Not available yet'}</dd>
-                                      </div>
-                                    </dl>
-                                  </section>
+                              <div className="cb-expanded cb-expanded--benefits">
+                                <div className="cb-expanded__benefit-title">
+                                  <strong>Multiple free-entry paths for one provider</strong>
                                 </div>
+                                <table className="cb-benefit-subtable">
+                                  <thead>
+                                    <tr>
+                                      <th>Benefit</th>
+                                      <th>Plan</th>
+                                      <th>Offer</th>
+                                      <th>Bonus</th>
+                                      <th>Stack</th>
+                                      <th>Action</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {BENEFIT_DEMO.benefits.map((benefit, index) => (
+                                      <tr key={`${BENEFIT_DEMO.slug}-${index}`}>
+                                        <td>
+                                          <SignalTextBadge kind={benefit.kind} label={benefit.label} />
+                                        </td>
+                                        <td>{benefit.plan}</td>
+                                        <td>
+                                          <div className="cb-offer-cell" title={benefit.offerNote}>
+                                            <SignalTextBadge kind={benefit.kind} label={benefit.offer} />
+                                            <span>Claim: {benefit.claim}</span>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <div className="cb-bonus-cell" title={benefit.offerNote}>
+                                            <span>U: {benefit.userGets}</span>
+                                            <span>R: {benefit.referrerGets}</span>
+                                          </div>
+                                        </td>
+                                        <td>
+                                          <span className="cb-pill cb-pill--unknown" title={benefit.offerNote}>
+                                            {benefit.stack}
+                                          </span>
+                                        </td>
+                                        <td>{benefit.action}</td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
                               </div>
                             </td>
                           </tr>
                         ) : null}
                       </Fragment>
-                    );
-                  })
+                    ) : null}
+
+                    {visibleProviders.map((provider) => {
+                      const expanded = expandedSlug === provider.slug;
+                      const signals = getProviderSignals(provider);
+                      const selected = selectedSlugs.includes(provider.slug);
+                      const statusSignal = getSubmissionSourceSignal();
+                      const infoSummary = getProviderInfoSummary(provider);
+                      const hostname = toHostname(provider.website || provider.docs_url || provider.pricing_url);
+
+                      return (
+                        <Fragment key={provider.slug}>
+                          <tr className={expanded ? 'cb-row cb-row--expanded' : 'cb-row'}>
+                            <td className="cb-cell cb-cell--checkbox">
+                              <input
+                                type="checkbox"
+                                checked={selected}
+                                onChange={() => toggleCompare(provider.slug)}
+                                aria-label={`Select ${provider.name} for compare`}
+                              />
+                            </td>
+                            <td className="cb-cell cb-cell--provider">
+                              <div className="cb-provider">
+                                <span className="cb-provider__name">{provider.name}</span>
+                                {hostname ? <span className="cb-provider__host">{hostname}</span> : null}
+                              </div>
+                            </td>
+                            <td className="cb-cell cb-cell--details">
+                              <div className="cb-details">
+                                <span className="cb-details__summary" title={infoSummary}>
+                                  {infoSummary}
+                                </span>
+                                <Link href="/dashboard" className="cb-details__submit" title={ROTATION_TOOLTIP}>
+                                  Submit code / referral / affiliate / deal link
+                                </Link>
+                              </div>
+                            </td>
+                            <td className="cb-cell cb-cell--more">
+                              <button
+                                type="button"
+                                className={expanded ? 'cb-more-button cb-more-button--open' : 'cb-more-button'}
+                                onClick={() => setExpandedSlug(expanded ? null : provider.slug)}
+                                title={expanded ? 'Hide free-entry details and links' : 'Show free-entry details and links'}
+                                aria-label={expanded ? `Collapse ${provider.name}` : `Expand ${provider.name}`}
+                              >
+                                ▸
+                              </button>
+                            </td>
+                            <td className="cb-cell cb-cell--signals cb-hide-lg">
+                              <div className="cb-icon-list">
+                                {signals.length > 0 ? (
+                                  signals.map((signal) => (
+                                    <SignalTextBadge key={`${provider.slug}-${signal.kind}`} kind={signal.kind} label={signal.label} />
+                                  ))
+                                ) : (
+                                  <span className="cb-muted">No flags</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="cb-cell cb-cell--status cb-hide-sm">
+                              <StatusPill {...statusSignal} />
+                            </td>
+                          </tr>
+                          {expanded ? <ProviderExpandedRow provider={provider} statusSignal={statusSignal} expanded={expanded} /> : null}
+                        </Fragment>
+                      );
+                    })}
+
+                    {visibleProviders.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="cb-empty">
+                          <p>No real provider rows match the current search and filter set.</p>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </>
                 )}
               </tbody>
             </table>

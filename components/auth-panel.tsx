@@ -114,7 +114,7 @@ export function AuthPanel({ defaultMode = 'sign-in', nextPath = '/dashboard' }: 
           </li>
         </ul>
 
-        <p className={styles.meta}>Local auth uses your Supabase stack on 127.0.0.1.</p>
+        <p className={styles.meta}>Email confirmation protects referral submissions and account ownership.</p>
       </section>
 
       <section className={styles.formCard}>

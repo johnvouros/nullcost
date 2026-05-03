@@ -6,6 +6,8 @@ create table if not exists public.referral_router_controls (
     updated_at timestamptz not null default now()
 );
 
+alter table public.referral_router_controls enable row level security;
+
 drop trigger if exists referral_router_controls_set_updated_at on public.referral_router_controls;
 create trigger referral_router_controls_set_updated_at
 before update on public.referral_router_controls

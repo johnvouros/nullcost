@@ -323,9 +323,6 @@ export function DashboardReviewShell({
                     <button type="submit" name="targetStatus" value="paused" className={styles.buttonGhost}>
                       Pause
                     </button>
-                    <Link href={`/providers/${entry.provider.slug}`} className={styles.linkButton}>
-                      Provider
-                    </Link>
                   </div>
                 </form>
               </div>

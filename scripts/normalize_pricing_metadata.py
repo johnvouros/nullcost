@@ -4,16 +4,18 @@ import argparse
 import asyncio
 import csv
 import re
+from datetime import datetime
 from dataclasses import dataclass
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional
+from zoneinfo import ZoneInfo
 
 import httpx
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-TODAY = "2026-04-21"
+TODAY = datetime.now(ZoneInfo("Australia/Brisbane")).date().isoformat()
 
 NEW_FIELDS = [
     "starting_price_amount",

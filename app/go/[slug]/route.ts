@@ -38,7 +38,12 @@ export async function GET(
     // Fall through to the official provider links when the referral pool is empty or unavailable.
   }
 
-  let fallback = new URL(`/providers/${provider.slug}`, request.url).toString();
+  let fallback =
+    provider.website ||
+    provider.docs_url ||
+    provider.pricing_url ||
+    provider.signup_url ||
+    new URL('/', request.url).toString();
 
   try {
     const control = await getProviderRouterControlBySlug(provider.slug);
@@ -49,7 +54,7 @@ export async function GET(
       provider.docs_url ||
       provider.pricing_url ||
       provider.signup_url ||
-      new URL(`/providers/${provider.slug}`, request.url).toString();
+      new URL('/', request.url).toString();
   }
 
   return NextResponse.redirect(fallback, { status: 307 });
