@@ -1644,7 +1644,7 @@ function formatProviderDetail(provider) {
     provider.signupUrl ? `Signup: ${provider.signupUrl}` : null,
     getEffectiveStartingPrice(provider) ? `Starting price: ${getEffectiveStartingPrice(provider)}` : null,
     bestStartingPlan
-      ? `Best starting plan: ${bestStartingPlan.name} — ${bestStartingPlan.priceLabel || "Pricing unknown"}`
+      ? `Starting plan captured: ${bestStartingPlan.name} — ${bestStartingPlan.priceLabel || "Pricing unknown"}`
       : null,
     bestStartingPlan?.summary ? `Plan fit: ${bestStartingPlan.summary}` : null,
     provider.pricingModel ? `Pricing model: ${provider.pricingModel}` : null,
@@ -1986,12 +1986,15 @@ async function loadProviderDetail(baseUrl, slugOrName) {
 function makeSearchText(query, providers, source, sourceUrl, parsedIntent = null) {
   const contextText = parsedIntent?.fullText || query;
   const displayHints = chooseDisplayColumns(providers, contextText, "search");
-  const header = `Nullcost provider search${query ? ` for "${query}"` : ""} (${source})`;
+  const catalogUrl = getCatalogBrowseUrl(sourceUrl);
+  const header = `**Providers found:** Nullcost catalog${query ? ` results for "${query}"` : ""}`;
   const table = providers.length ? makeMarkdownTable(displayHints.columns, providers, contextText) : "No providers matched the search terms.";
 
   return [
     header,
-    sourceUrl ? `Source: ${sourceUrl}` : null,
+    "**Source mode:** Nullcost catalog database",
+    catalogUrl ? `**Catalog:** [Browse Nullcost](${catalogUrl})` : null,
+    `**Result source:** ${source}`,
     providers.length ? `Suggested columns: ${displayHints.columns.join(" | ")}` : null,
     providers.length ? "" : null,
     table,
@@ -2003,26 +2006,24 @@ function makeSearchText(query, providers, source, sourceUrl, parsedIntent = null
 function makeRecommendationText(contextLabel, providers, sourceUrl, parsedIntent = null) {
   const contextText = parsedIntent?.fullText || contextLabel;
   const displayHints = chooseDisplayColumns(providers, contextText, "recommendation");
+  const catalogUrl = getCatalogBrowseUrl(sourceUrl);
   const featureGapSummary = summarizeUnconfirmedFeatures(parsedIntent);
   const shortlistMode = Boolean(featureGapSummary);
-  const winnerLine = providers.length && !shortlistMode ? `**Best fit:** ${providers[0].name}` : null;
+  const resultLine = providers.length
+    ? `**Providers found:** Nullcost catalog matches for "${contextLabel}"`
+    : `**Providers found:** No catalog matches for "${contextLabel}"`;
   const shortlistLine = shortlistMode
     ? `**Shortlist mode:** Nullcost cannot confirm ${featureGapSummary} from structured DB fields yet, so treat this as a shortlist.`
     : null;
-  const winnerPlanLine =
-    providers.length && providers[0]?.bestStartingPlan && !shortlistMode
-      ? `**Best starting plan:** ${providers[0].bestStartingPlan.name} — ${providers[0].bestStartingPlan.priceLabel || "Pricing unknown"}`
-      : null;
   const table = providers.length
     ? makeMarkdownTable(displayHints.columns, providers, contextText)
-    : "No recommendations could be produced from the current catalog.";
+    : "No providers could be produced from the current catalog.";
 
   return [
-    winnerLine,
+    resultLine,
     shortlistLine,
-    winnerPlanLine,
     "**Source mode:** Nullcost catalog database",
-    sourceUrl ? `**Source:** ${sourceUrl}` : null,
+    catalogUrl ? `**Catalog:** [Browse Nullcost](${catalogUrl})` : null,
     "",
     table,
   ]
@@ -2030,10 +2031,12 @@ function makeRecommendationText(contextLabel, providers, sourceUrl, parsedIntent
     .join("\n");
 }
 
-function makeStackRecommendationText(useCase, slotResults) {
+function makeStackRecommendationText(useCase, slotResults, sourceUrl = "") {
+  const catalogUrl = getCatalogBrowseUrl(sourceUrl);
   const lines = [
-    `**Stack recommendation:** ${useCase}`,
+    `**Providers found:** Nullcost catalog stack matches for "${useCase}"`,
     "**Source mode:** Nullcost catalog database",
+    catalogUrl ? `**Catalog:** [Browse Nullcost](${catalogUrl})` : null,
     "",
   ];
 
@@ -2043,18 +2046,28 @@ function makeStackRecommendationText(useCase, slotResults) {
       lines.push(`**${slotResult.title}:** shortlist only`);
       lines.push(`Nullcost cannot confirm ${featureGapSummary} from structured DB fields yet.`);
     } else {
-      lines.push(`**${slotResult.title}:** ${slotResult.recommendations[0]?.name || "No match"}`);
+      lines.push(`**${slotResult.title}:** providers found`);
     }
-    if (slotResult.recommendations[0]?.bestStartingPlan && !featureGapSummary) {
-      lines.push(
-        `Best starting plan: ${slotResult.recommendations[0].bestStartingPlan.name} — ${slotResult.recommendations[0].bestStartingPlan.priceLabel || "Pricing unknown"}`,
-      );
-    }
-    lines.push(slotResult.markdownPreview || "No recommendations available.");
+    lines.push(slotResult.markdownPreview || "No providers available.");
     lines.push("");
   }
 
   return lines.filter(Boolean).join("\n");
+}
+
+function getCatalogBrowseUrl(sourceUrl = "") {
+  const fallbackBase = getDefaultBaseUrl();
+  const raw = sourceUrl || fallbackBase;
+
+  try {
+    return new URL("/", raw).toString();
+  } catch {
+    try {
+      return new URL("/", fallbackBase).toString();
+    } catch {
+      return "https://nullcost.xyz/";
+    }
+  }
 }
 
 function isYes(value) {
@@ -2507,6 +2520,7 @@ server.registerTool(
     const displayHints = chooseDisplayColumns(filtered, parsedIntent.fullText, "search");
     const markdownPreview = filtered.length ? makeMarkdownTable(displayHints.columns, filtered, parsedIntent.fullText) : "";
     const text = makeSearchText(query, filtered, response.source, response.sourceUrl, parsedIntent);
+    const catalogUrl = getCatalogBrowseUrl(response.sourceUrl);
 
     return {
       content: [
@@ -2524,6 +2538,7 @@ server.registerTool(
         baseUrl: resolvedBaseUrl,
         source: response.source,
         sourceUrl: response.sourceUrl,
+        catalogUrl,
         count: filtered.length,
         parsedIntent,
         displayHints,
@@ -2559,10 +2574,10 @@ server.registerTool(
 server.registerTool(
   "recommend_providers",
   {
-    description: "Recommend providers for a use case using catalog signals like fit, setup friction, pricing, and API availability.",
+    description: "List catalog-ranked providers for a use case using signals like fit, setup friction, pricing, and API availability.",
     inputSchema: {
       useCase: z.string().min(1).describe("The buying or implementation goal to optimize for."),
-      limit: z.number().int().min(1).max(MAX_LIMIT).optional().describe("Maximum number of recommendations to return."),
+      limit: z.number().int().min(1).max(MAX_LIMIT).optional().describe("Maximum number of provider rows to return."),
       category: z.string().optional().describe("Optional category preference."),
       subcategory: z.string().optional().describe("Optional subcategory preference."),
       needApi: z.boolean().optional().describe("Prefer providers with explicit API availability."),
@@ -2570,7 +2585,7 @@ server.registerTool(
       preferLowFriction: z.boolean().optional().describe("Prefer low setup friction."),
       preferFreeTier: z.boolean().optional().describe("Prefer a free tier if available."),
       preferSelfServe: z.boolean().optional().describe("Prefer self-serve products."),
-      mode: z.enum(["fast", "verified"]).optional().describe("Reserved for compatibility. v1 recommendations use the Nullcost catalog database only."),
+      mode: z.enum(["fast", "verified"]).optional().describe("Reserved for compatibility. v1 provider lists use the Nullcost catalog database only."),
       context: z.string().optional().describe("Optional prior context for follow-up queries like 'what about cheaper ones'."),
       baseUrl: z.string().url().optional().describe("Override the catalog API base URL."),
     },
@@ -2604,7 +2619,7 @@ server.registerTool(
         content: [
           {
             type: "text",
-            text: `Nullcost provider recommendations failed\n${message}`,
+            text: `Nullcost provider lookup failed\n${message}`,
           },
         ],
         structuredContent: {
@@ -2641,6 +2656,7 @@ server.registerTool(
     const displayHints = chooseDisplayColumns(ranked, parsedIntent.fullText, "recommendation");
     const markdownPreview = ranked.length ? makeMarkdownTable(displayHints.columns, ranked, parsedIntent.fullText) : "";
     const text = makeRecommendationText(useCase, ranked, catalog.sourceUrl, parsedIntent);
+    const catalogUrl = getCatalogBrowseUrl(catalog.sourceUrl);
 
     return {
       content: [
@@ -2659,13 +2675,14 @@ server.registerTool(
         baseUrl: resolvedBaseUrl,
         source: "catalog-rank",
         sourceUrl: catalog.sourceUrl,
+        catalogUrl,
         count: ranked.length,
         parsedIntent,
         shortlistMode: Boolean(parsedIntent.unconfirmedFeatureTerms?.length),
         unconfirmedFeatureTerms: parsedIntent.unconfirmedFeatureTerms ?? [],
         displayHints,
         markdownPreview,
-        winnerPlan: ranked[0]?.bestStartingPlan
+        topResultPlan: ranked[0]?.bestStartingPlan
           ? {
               slug: ranked[0].bestStartingPlan.slug,
               name: ranked[0].bestStartingPlan.name,
@@ -2684,12 +2701,12 @@ server.registerTool(
 server.registerTool(
   "recommend_stack",
   {
-    description: "Recommend a multi-category developer stack in one call. Best for asks like hosting + auth + postgres + email.",
+    description: "List catalog-ranked providers for a multi-category developer stack in one call. Useful for asks like hosting + auth + postgres + email.",
     inputSchema: {
       useCase: z.string().min(1).describe("The product or stack goal to optimize for."),
       stack: z.array(z.enum(["hosting", "auth", "postgres", "email"])).optional().describe("Optional stack slots to force instead of inferring them from the prompt."),
-      limitPerSlot: z.number().int().min(1).max(5).optional().describe("Maximum number of recommendations to return per stack slot."),
-      mode: z.enum(["fast", "verified"]).optional().describe("Reserved for compatibility. v1 stack recommendations use the Nullcost catalog database only."),
+      limitPerSlot: z.number().int().min(1).max(5).optional().describe("Maximum number of provider rows to return per stack slot."),
+      mode: z.enum(["fast", "verified"]).optional().describe("Reserved for compatibility. v1 stack provider lists use the Nullcost catalog database only."),
       context: z.string().optional().describe("Optional prior context for follow-up queries like 'cheaper ones' or 'just auth and email'."),
       baseUrl: z.string().url().optional().describe("Override the catalog API base URL."),
     },
@@ -2710,7 +2727,7 @@ server.registerTool(
         content: [
           {
             type: "text",
-            text: `Nullcost stack recommendation failed\n${message}`,
+            text: `Nullcost stack provider lookup failed\n${message}`,
           },
         ],
         structuredContent: {
@@ -2759,7 +2776,7 @@ server.registerTool(
       });
     }
 
-    const text = makeStackRecommendationText(useCase, slotResults);
+    const text = makeStackRecommendationText(useCase, slotResults, catalog.sourceUrl);
 
     return {
       content: [
@@ -2777,10 +2794,11 @@ server.registerTool(
         stack: slotKeys,
         limitPerSlot: resolvedLimitPerSlot,
         baseUrl: resolvedBaseUrl,
-        winners: slotResults.map((slot) => ({
+        catalogUrl: getCatalogBrowseUrl(catalog.sourceUrl),
+        topResults: slotResults.map((slot) => ({
           key: slot.key,
           title: slot.title,
-          winner: slot.recommendations[0] ? serializeProviderRecommendation(slot.recommendations[0]) : null,
+          topResult: slot.recommendations[0] ? serializeProviderRecommendation(slot.recommendations[0]) : null,
         })),
         slots: slotResults.map((slot) => ({
           key: slot.key,

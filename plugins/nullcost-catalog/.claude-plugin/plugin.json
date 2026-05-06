@@ -1,7 +1,7 @@
 {
   "name": "nullcost-catalog",
   "version": "0.1.0",
-  "description": "Plugin-first cheap, free-tier, and best-value developer service recommendations backed by the hosted Nullcost catalog and local MCP engine. For v1, stay DB-backed and do not browse live pricing pages. Use for developer tools, not domain availability or registrar-price checks.",
+  "description": "Plugin-first cheap and free-tier developer service discovery backed by the hosted Nullcost catalog and bundled MCP engine. For v1, stay DB-backed, present provider lists neutrally, and do not browse live pricing pages. Use for developer tools, not domain availability or registrar-price checks.",
   "author": {
     "name": "Nullcost"
   },

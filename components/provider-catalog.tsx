@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Fragment, startTransition, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, startTransition, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import {
   getDisplayPrice,
   getFreeEntryLabel,
@@ -48,20 +48,19 @@ const BENEFIT_DEMO = {
   name: 'Acme Hosting',
   slug: 'acme-hosting',
   host: 'example listing',
-  summary: 'Example hosting platform with a free starter path, paid-plan trials, and deal formats that may or may not stack.',
+  summary: 'Example hosting platform with a free starter path, paid-plan trials, and several deal formats.',
   benefits: [
     {
       label: 'Free forever',
       plan: 'Starter',
       detail: 'Always-free starter plan for hobby apps.',
       window: 'Ongoing',
-      action: 'Use direct signup',
-      offer: 'Direct signup',
-      offerNote: 'How to claim: signup. User gets: free forever. Referrer gets: none. Stack: n/a.',
+      claimNote: 'How to claim: signup. User gets: free forever. Referrer gets: none.',
       claim: 'Signup',
       userGets: 'Free forever',
       referrerGets: 'None',
-      stack: 'N/A',
+      benefitUrl: 'https://example.com/signup',
+      planUrl: 'https://example.com/pricing',
       kind: 'free-tier' as SignalKind,
     },
     {
@@ -69,13 +68,12 @@ const BENEFIT_DEMO = {
       plan: 'Basic',
       detail: 'Trial access to the first paid hosting plan.',
       window: '30 days',
-      action: 'Start trial',
-      offer: 'Trial',
-      offerNote: 'How to claim: signup. User gets: 30 days. Referrer gets: none. Stack: no.',
+      claimNote: 'How to claim: signup. User gets: 30 days. Referrer gets: none.',
       claim: 'Signup',
       userGets: '30 days',
       referrerGets: 'None',
-      stack: 'No',
+      benefitUrl: 'https://example.com/signup',
+      planUrl: 'https://example.com/pricing',
       kind: 'free-trial' as SignalKind,
     },
     {
@@ -83,13 +81,12 @@ const BENEFIT_DEMO = {
       plan: 'Pro',
       detail: 'Short trial for higher build limits and team features.',
       window: '7 days',
-      action: 'Compare limits',
-      offer: 'Trial',
-      offerNote: 'How to claim: signup. User gets: 7 days. Referrer gets: none. Stack: no.',
+      claimNote: 'How to claim: signup. User gets: 7 days. Referrer gets: none.',
       claim: 'Signup',
       userGets: '7 days',
       referrerGets: 'None',
-      stack: 'No',
+      benefitUrl: 'https://example.com/signup',
+      planUrl: 'https://example.com/pricing',
       kind: 'free-trial' as SignalKind,
     },
     {
@@ -97,13 +94,12 @@ const BENEFIT_DEMO = {
       plan: 'Any paid plan',
       detail: 'Could be a coupon or a referral code. Show the user bonus first.',
       window: 'April 2026',
-      action: 'Go to deal',
-      offer: 'Offer code',
-      offerNote: 'How to claim: code. User gets: $5 credit. Referrer gets: $5 credit. Stack: unknown.',
+      claimNote: 'How to claim: code. User gets: $5 credit. Referrer gets: $5 credit.',
       claim: 'Code',
       userGets: '$5 credit',
       referrerGets: '$5 credit',
-      stack: 'Unknown',
+      benefitUrl: 'https://example.com/referrals',
+      planUrl: 'https://example.com/pricing',
       kind: 'user-discount' as SignalKind,
     },
     {
@@ -111,13 +107,12 @@ const BENEFIT_DEMO = {
       plan: 'Pro',
       detail: 'Tracked partner link where the user may not get a special bonus.',
       window: 'Ongoing',
-      action: 'Open link',
-      offer: 'Affiliate',
-      offerNote: 'How to claim: link. User gets: none or unknown. Referrer gets: commission or credit. Stack: maybe with code.',
+      claimNote: 'How to claim: link. User gets: none or unknown. Referrer gets: commission or credit.',
       claim: 'Link',
       userGets: 'None / unknown',
       referrerGets: 'Commission or credit',
-      stack: 'Maybe',
+      benefitUrl: 'https://example.com/partners',
+      planUrl: 'https://example.com/pricing',
       kind: 'program' as SignalKind,
     },
     {
@@ -125,13 +120,12 @@ const BENEFIT_DEMO = {
       plan: 'Pro',
       detail: 'Affiliate link gets the user in, then a code may still be needed during signup.',
       window: 'Ongoing',
-      action: 'Open link',
-      offer: 'Link + code',
-      offerNote: 'How to claim: link first, code second if required. User gets: $10 credit. Referrer gets: commission or credit. Stack: maybe.',
+      claimNote: 'How to claim: link first, code second if required. User gets: $10 credit. Referrer gets: commission or credit.',
       claim: 'Link + code',
       userGets: '$10 credit',
       referrerGets: 'Commission or credit',
-      stack: 'Maybe',
+      benefitUrl: 'https://example.com/referrals',
+      planUrl: 'https://example.com/pricing',
       kind: 'program' as SignalKind,
     },
     {
@@ -139,13 +133,12 @@ const BENEFIT_DEMO = {
       plan: 'Basic',
       detail: 'A free trial may still accept a code for extra credit or a longer window.',
       window: '7 days + code',
-      action: 'Check terms',
-      offer: 'Trial + code',
-      offerNote: 'How to claim: signup plus code if allowed. User gets: 7 days + bonus credit. Referrer gets: unknown. Stack: unknown.',
+      claimNote: 'How to claim: signup plus code if allowed. User gets: 7 days + bonus credit. Referrer gets: unknown.',
       claim: 'Signup + code',
       userGets: '7 days + bonus credit',
       referrerGets: 'Unknown',
-      stack: 'Unknown',
+      benefitUrl: 'https://example.com/signup',
+      planUrl: 'https://example.com/pricing',
       kind: 'free-trial' as SignalKind,
     },
   ],
@@ -412,12 +405,48 @@ function getPlanActionLabel(plan: ProviderPlanRow): string {
   return 'Open link';
 }
 
+function getPlanClaimLabel(plan: ProviderPlanRow): string {
+  if (plan.plan_type === 'free') {
+    return 'Direct signup';
+  }
+
+  if (plan.trial_available) {
+    return 'Start trial';
+  }
+
+  return 'Official plan';
+}
+
 function getPlanActionUrl(provider: ProviderRow, plan: ProviderPlanRow): string {
   return normalize(plan.official_url) || normalize(plan.source_url) || normalize(provider.signup_url) || normalize(provider.website);
 }
 
+function getPlanDetailUrl(plan: ProviderPlanRow): string {
+  return normalize(plan.official_url) || normalize(plan.source_url);
+}
+
 function getProviderActionUrl(provider: ProviderRow): string {
   return normalize(provider.signup_url) || normalize(provider.pricing_url) || normalize(provider.website) || normalize(provider.docs_url);
+}
+
+function getProviderPlanUrl(provider: ProviderRow): string {
+  return normalize(provider.pricing_url) || normalize(provider.signup_url) || normalize(provider.website) || normalize(provider.docs_url);
+}
+
+function getProviderClaimLabel(provider: ProviderRow): string {
+  if (isYes(provider.free_tier)) {
+    return 'Direct signup';
+  }
+
+  if (isYes(provider.free_trial)) {
+    return 'Start trial';
+  }
+
+  if (isYes(provider.contact_sales_only)) {
+    return 'Contact sales';
+  }
+
+  return 'Official path';
 }
 
 function getProviderSignals(provider: ProviderRow) {
@@ -805,6 +834,43 @@ function StatusPill({
   );
 }
 
+function QuickLink({
+  href,
+  label,
+}: {
+  href: string | null | undefined;
+  label: string;
+}) {
+  const url = normalize(href);
+
+  if (!url) {
+    return null;
+  }
+
+  return (
+    <a className="cb-quicklink" href={url} target="_blank" rel="nofollow noopener noreferrer" title={label} aria-label={label}>
+      <Glyph name="external" />
+    </a>
+  );
+}
+
+function LinkedSubtableCell({
+  children,
+  href,
+  linkLabel,
+}: {
+  children: ReactNode;
+  href?: string | null;
+  linkLabel: string;
+}) {
+  return (
+    <div className="cb-subtable-linked-cell">
+      <span className="cb-subtable-linked-cell__content">{children}</span>
+      <QuickLink href={href} label={linkLabel} />
+    </div>
+  );
+}
+
 function ProviderExpandedRow({
   provider,
   statusSignal,
@@ -903,52 +969,49 @@ function ProviderExpandedRow({
                   <tr>
                     <th>Benefit</th>
                     <th>Plan</th>
-                    <th>What it means</th>
-                    <th>Window</th>
-                    <th>Action</th>
+                    <th>User gets</th>
+                    <th>Claim</th>
+                    <th>Term</th>
                   </tr>
                 </thead>
                 <tbody>
                   {showProviderEntryRow ? (
                     <tr className="cb-benefit-subtable__best">
                       <td>
-                        <SignalTextBadge kind={providerEntryKind} label={providerEntryLabel} />
+                        <LinkedSubtableCell href={providerActionUrl} linkLabel={`Open ${provider.name} ${providerEntryLabel.toLowerCase()}`}>
+                          <SignalTextBadge kind={providerEntryKind} label={providerEntryLabel} />
+                        </LinkedSubtableCell>
                       </td>
-                      <td>{bestStartingPlan?.name || 'Provider entry'}</td>
-                      <td>{providerEntryNote}</td>
-                      <td>{isYes(provider.free_tier) ? 'Free forever' : isYes(provider.free_trial) ? 'Trial' : 'Unknown'}</td>
                       <td>
-                        {providerActionUrl ? (
-                          <a href={providerActionUrl} target="_blank" rel="nofollow noopener noreferrer">
-                            {providerEntryLabel === 'Free tier' ? 'Open free tier' : 'Open trial'}
-                          </a>
-                        ) : (
-                          <span className="cb-muted">No link</span>
-                        )}
+                        <LinkedSubtableCell href={getProviderPlanUrl(provider)} linkLabel={`Open ${provider.name} plan details`}>
+                          {bestStartingPlan?.name || 'Provider entry'}
+                        </LinkedSubtableCell>
                       </td>
+                      <td>{providerEntryNote}</td>
+                      <td>{getProviderClaimLabel(provider)}</td>
+                      <td>{isYes(provider.free_tier) ? 'Free forever' : isYes(provider.free_trial) ? 'Trial' : 'Unknown'}</td>
                     </tr>
                   ) : null}
                   {planRows.map((plan) => {
                     const actionUrl = getPlanActionUrl(provider, plan);
+                    const planDetailUrl = getPlanDetailUrl(plan) || actionUrl;
                     const isBestPlan = Boolean(bestStartingPlan && bestStartingPlan.id === plan.id);
 
                     return (
                       <tr key={`${provider.slug}-${plan.slug}`} className={isBestPlan ? 'cb-benefit-subtable__best' : undefined}>
                         <td>
-                          <SignalTextBadge kind={getPlanBenefitKind(plan)} label={getPlanBenefitLabel(plan)} />
+                          <LinkedSubtableCell href={actionUrl} linkLabel={`${getPlanActionLabel(plan)} for ${provider.name}`}>
+                            <SignalTextBadge kind={getPlanBenefitKind(plan)} label={getPlanBenefitLabel(plan)} />
+                          </LinkedSubtableCell>
                         </td>
-                        <td>{plan.name}</td>
-                        <td>{getFreeEntrySummary(provider, plan)}</td>
-                        <td>{getPlanWindowLabel(plan)}</td>
                         <td>
-                          {actionUrl ? (
-                            <a href={actionUrl} target="_blank" rel="nofollow noopener noreferrer">
-                              {getPlanActionLabel(plan)}
-                            </a>
-                          ) : (
-                            <span className="cb-muted">No link</span>
-                          )}
+                          <LinkedSubtableCell href={planDetailUrl} linkLabel={`Open ${plan.name} plan details`}>
+                            {plan.name}
+                          </LinkedSubtableCell>
                         </td>
+                        <td>{getFreeEntrySummary(provider, plan)}</td>
+                        <td>{getPlanClaimLabel(plan)}</td>
+                        <td>{getPlanWindowLabel(plan)}</td>
                       </tr>
                     );
                   })}
@@ -1591,37 +1654,39 @@ export function ProviderCatalog({ providers }: { providers: ProviderRow[] }) {
                                     <tr>
                                       <th>Benefit</th>
                                       <th>Plan</th>
-                                      <th>Offer</th>
-                                      <th>Bonus</th>
-                                      <th>Stack</th>
-                                      <th>Action</th>
+                                      <th>User gets</th>
+                                      <th>Claim</th>
+                                      <th>Referrer gets</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {BENEFIT_DEMO.benefits.map((benefit, index) => (
                                       <tr key={`${BENEFIT_DEMO.slug}-${index}`}>
                                         <td>
-                                          <SignalTextBadge kind={benefit.kind} label={benefit.label} />
+                                          <LinkedSubtableCell href={benefit.benefitUrl} linkLabel={`Open ${benefit.label.toLowerCase()} path`}>
+                                            <SignalTextBadge kind={benefit.kind} label={benefit.label} />
+                                          </LinkedSubtableCell>
                                         </td>
-                                        <td>{benefit.plan}</td>
                                         <td>
-                                          <div className="cb-offer-cell" title={benefit.offerNote}>
-                                            <SignalTextBadge kind={benefit.kind} label={benefit.offer} />
-                                            <span>Claim: {benefit.claim}</span>
+                                          <LinkedSubtableCell href={benefit.planUrl} linkLabel={`Open ${benefit.plan} plan details`}>
+                                            {benefit.plan}
+                                          </LinkedSubtableCell>
+                                        </td>
+                                        <td>
+                                          <div className="cb-benefit-value-cell" title={benefit.claimNote}>
+                                            {benefit.userGets}
                                           </div>
                                         </td>
                                         <td>
-                                          <div className="cb-bonus-cell" title={benefit.offerNote}>
-                                            <span>U: {benefit.userGets}</span>
-                                            <span>R: {benefit.referrerGets}</span>
+                                          <div className="cb-claim-cell" title={benefit.claimNote}>
+                                            {benefit.claim}
                                           </div>
                                         </td>
                                         <td>
-                                          <span className="cb-pill cb-pill--unknown" title={benefit.offerNote}>
-                                            {benefit.stack}
-                                          </span>
+                                          <div className="cb-benefit-value-cell" title={benefit.claimNote}>
+                                            {benefit.referrerGets}
+                                          </div>
                                         </td>
-                                        <td>{benefit.action}</td>
                                       </tr>
                                     ))}
                                   </tbody>

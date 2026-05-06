@@ -86,15 +86,19 @@ Go to:
 https://nullcost.xyz/install
 ```
 
-Pick your coding app, then copy the matching setup. That is the noob-friendly path.
+If you use Codex, choose the **plugin-first** setup. That installs the Nullcost
+plugin wrapper, skills, icon, and bundled catalog MCP server together.
 
-If your app cannot install repo plugins, use the MCP setup for that app. Same catalog, different wrapper.
+If your app cannot install repo plugins, use the MCP setup for that app. Same
+catalog, different wrapper. MCP is the engine and fallback; the plugin is the
+preferred Codex experience.
 
 ## Supported Coding Apps
 
-Nullcost is plugin-enhanced for clients that support repo/local plugins, but the
-real compatibility layer is MCP. If a coding agent supports stdio MCP servers,
-it can usually use Nullcost.
+Nullcost is plugin-first in Codex and plugin-enhanced for clients that support
+repo/local plugins. The compatibility layer underneath is MCP: if a coding agent
+supports stdio MCP servers, it can usually use Nullcost even without the plugin
+wrapper.
 
 | Client | Best path | Config shape |
 | --- | --- | --- |

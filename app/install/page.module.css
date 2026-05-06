@@ -284,7 +284,8 @@
 }
 
 .clientSetupGrid,
-.clientSetupPreviewGrid {
+.clientSetupPreviewGrid,
+.pluginFirstGrid {
   display: grid;
   gap: 12px;
 }
@@ -295,6 +296,10 @@
 
 .clientSetupPreviewGrid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.pluginFirstGrid {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .clientSetupCard,
@@ -309,6 +314,17 @@
 
 .clientSetupCard {
   cursor: pointer;
+}
+
+.pluginFirstGrid .clientSetupPreviewCard {
+  border-color: rgba(37, 206, 105, 0.24);
+  background:
+    linear-gradient(90deg, rgba(37, 206, 105, 0.08), transparent 44%),
+    rgba(0, 0, 0, 0.24);
+}
+
+.pluginFirstGrid .clientSetupHeader h3 {
+  font-size: 1.12rem;
 }
 
 .clientSetupCard summary {
@@ -777,7 +793,8 @@
   }
 
   .clientSetupGrid,
-  .clientSetupPreviewGrid {
+  .clientSetupPreviewGrid,
+  .pluginFirstGrid {
     grid-template-columns: 1fr;
   }
 

@@ -7,8 +7,8 @@ import styles from './page.module.css';
 const quickSteps = [
   {
     number: '01',
-    title: 'Copy this into your coding app',
-    subtitle: 'Use this in Codex, Claude Code, Cursor, Windsurf, or another agent that can edit files and run terminal commands.',
+    title: 'Copy this into Codex',
+    subtitle: 'This is the plugin-first install path. Codex should install the plugin before falling back to raw MCP.',
     commands: [
       'Install the Nullcost Catalog plugin from https://github.com/johnvouros/nullcost/tree/main/plugins/nullcost-catalog. Use it when I ask about cheap or free-tier developer tools. If this app cannot install repo plugins, tell me and use the manual MCP fallback instead.',
     ],
@@ -97,11 +97,12 @@ const openCodeConfig = `{
 }`;
 
 const noobChecklist = [
-  'Pick your coding app below.',
+  'Use the Codex plugin card first if you are in Codex.',
+  'Use MCP only if your app cannot install plugins.',
   'Clone Nullcost once if your app needs raw MCP.',
-  'Copy the config for your app.',
+  'Copy the config for your fallback app.',
   'Paste it into that app\'s MCP settings.',
-  'Restart or reload the app if it asks.',
+  'Restart or reload the app so it starts a fresh server.',
   'Ask one of the test prompts below.',
 ] as const;
 
@@ -395,6 +396,9 @@ function ClientSetupPreviewCard({
 }
 
 export default function InstallPage() {
+  const codexPluginTarget = installTargets[0];
+  const mcpFallbackTargets = installTargets.slice(1);
+
   return (
     <div className={styles.page}>
       <div className={styles.contentGrid}>
@@ -408,38 +412,43 @@ export default function InstallPage() {
             </div>
 
             <h1>
-              Install the <span>Nullcost plugin</span>.
+              Install the <span>Nullcost plugin</span> first.
             </h1>
             <p>
-              Pick your app, copy one setup, restart that app, then ask for free-tier tools.
+              Codex users should start with the plugin. Raw MCP is the fallback for clients that cannot install repo
+              plugins.
             </p>
           </section>
 
           <section className={`${styles.panel} ${styles.fastPanel}`}>
             <div className={styles.panelHeader}>
-              <h2>Fast path</h2>
-              <span>Copy one</span>
+              <h2>Codex plugin path</h2>
+              <span>Start here</span>
             </div>
-            <div className={styles.clientSetupPreviewGrid}>
-              {installTargets.slice(0, 6).map((target) => (
-                <ClientSetupPreviewCard key={target.name} {...target} />
-              ))}
+
+            <p className={styles.panelIntro}>
+              This is the primary install path for Codex. It installs the plugin wrapper, skills, icon, and bundled MCP
+              server together.
+            </p>
+
+            <div className={styles.pluginFirstGrid}>
+              <ClientSetupPreviewCard {...codexPluginTarget} />
             </div>
           </section>
 
           <section className={styles.panel}>
             <div className={styles.panelHeader}>
-              <h2>Other clients</h2>
-              <span>Expand if needed</span>
+              <h2>MCP fallback and other clients</h2>
+              <span>Use only if needed</span>
             </div>
 
             <p className={styles.panelIntro}>
-              Expand only if your client is not in the fast path. Replace <code>/path/to/nullcost</code> with the folder
-              where you cloned the repo.
+              Use these when your coding app cannot install the Nullcost plugin. Replace <code>/path/to/nullcost</code>{' '}
+              with the folder where you cloned the repo.
             </p>
 
             <div className={styles.clientSetupGrid}>
-              {installTargets.slice(6).map((target) => (
+              {mcpFallbackTargets.map((target) => (
                 <ClientSetupCard key={target.name} {...target} />
               ))}
             </div>
@@ -533,7 +542,7 @@ export default function InstallPage() {
             <div className={styles.infoBlocks}>
               <div>
                 <h3>Use the plugin first.</h3>
-                <p>You do not need to understand MCP to use Nullcost. The plugin handles the normal path.</p>
+                <p>In Codex, install the Nullcost plugin. It carries the routing skill and starts the catalog tools.</p>
               </div>
               <div>
                 <h3>What if my app says no?</h3>

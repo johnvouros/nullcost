@@ -1,6 +1,6 @@
 ---
 name: nullcost-recommend
-description: Recommend the best providers for a specific development use case, including plain asks like cheap hosting, best value auth, free-tier database, or good email service for a SaaS. Use as a slash command when the user wants `/nullcost-recommend`. Do not use this for domain/registrar/TLD prompts.
+description: List Nullcost catalog providers for a specific development use case, including plain asks like cheap hosting, best value auth, free-tier database, or good email service for a SaaS. Use as a slash command when the user wants `/nullcost-recommend`. Do not use this for domain/registrar/TLD prompts.
 argument-hint: <use-case>
 version: 0.1.0
 ---
@@ -15,9 +15,9 @@ The user invoked this command with: $ARGUMENTS
 2. Otherwise use `recommend_providers` with the user's full natural-language use case.
 3. If `$ARGUMENTS` is actually about domain availability, registrar pricing, TLD choice, transfers, renewals, or exact domain registration status, stop and route to TLDPlug instead of Nullcost.
 4. Keep the answer DB-backed and catalog-first for v1. Do not browse, web-search, or verify official pricing pages.
-5. If one result clearly wins and the user wants more detail on that exact provider, call `get_provider_detail` on that top provider before answering.
+5. If the user asks for more detail on one exact provider, call `get_provider_detail` on that provider before answering.
 6. Preserve the tool's Markdown table output. Do not rewrite a table result into prose paragraphs when the host can render Markdown.
-7. Return one short winner line first, unless the DB cannot confirm a requested feature from structured fields. In that case, say it is a shortlist instead of naming a hard winner.
+7. Do not name a best fit, winner, or what you would personally start with. Present the response as providers found in the catalog.
 8. Then render the top results as a Markdown table.
 9. When there are 2 or more results, a Markdown table is required. Do not answer with prose paragraphs only.
 10. Keep the table compact with a stable spine: `Provider`, `Link`, `Price`, and `Fit`.
@@ -27,22 +27,25 @@ The user invoked this command with: $ARGUMENTS
 14. If the user asks for `best value`, `affordable`, `good value`, `cheap`, `spend`, `cost`, `current pricing`, or `SSR costs`, stay on the Nullcost database path and prefer providers with visible pricing while calling out when pricing is unknown.
 15. Do not waste columns on signals that are constant across the current rows.
 16. Mention the main tradeoff for each row in the `Fit` text instead of adding a generic `Notes` column unless the comparison truly needs it. Keep `Fit` short.
-17. Mention any verified program or discount signal only after the fit-based recommendation.
+17. Mention any verified program or discount signal only as secondary metadata after the provider list.
 18. If the user is following up on an earlier shortlist, pass the earlier use case or shortlist summary into the tool's `context` field so modifiers like `cheaper`, `self-hosted`, or `only show auth` are interpreted correctly.
 19. If the user asks for features the DB does not confirm cleanly, explicitly say that and present a shortlist table rather than overstating certainty.
+20. Link to the public Nullcost catalog page when providing source context; do not expose the API endpoint as the user-facing source link.
+21. Avoid prose like "I'd start with..." or "you should choose..." unless the user explicitly asks you to make a decision.
 
 ## Output Shape
 
 Prefer this structure in normal chat:
 
 ```md
-**Best fit:** Provider name
+**Providers found:** Nullcost catalog matches for "cheap hosting"
+**Catalog:** [Browse Nullcost](https://nullcost.xyz/)
 
 | Provider | Link | Price | MCP Fit | Fit |
 | --- | --- | --- | --- | --- |
-| Winner | [Official](https://example.com) | ... | ... | ... |
-| Alt 1 | [Official](https://example.com) | ... | ... | ... |
-| Alt 2 | [Official](https://example.com) | ... | ... | ... |
+| Provider 1 | [Official](https://example.com) | ... | ... | ... |
+| Provider 2 | [Official](https://example.com) | ... | ... | ... |
+| Provider 3 | [Official](https://example.com) | ... | ... | ... |
 ```
 
 If the host clearly fails to render Markdown tables, fall back to compact rows.

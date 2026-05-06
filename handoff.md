@@ -44,7 +44,8 @@ npm run mcp:catalog
 - The public catalog should only show providers with a real free tier or free trial.
 - Do not expose paid-only providers in public site/API/MCP outputs unless explicitly building an admin/internal surface.
 - Normal MCP/plugin recommendations are DB-backed for v1. Do not add live web pricing checks to the default recommendation path.
-- If the DB cannot confirm a requested feature, prefer a shortlist with caveats over a single confident winner.
+- MCP/plugin chat output should present catalog-ranked provider lists neutrally. Do not lead with `Best fit`, `winner`, or `I would start with...` unless the user explicitly asks for a decision.
+- If the DB cannot confirm a requested feature, say so and present a shortlist with caveats rather than overstating certainty.
 - Keep the main catalog rows dense. Extra detail belongs in the expanded row or dashboard/profile pages.
 - Provider profile pages under `/providers/[slug]` are intentionally disabled for now and should return `notFound()`.
 - Public referral/profile pages are separate from provider profile/catalog pages.
@@ -57,16 +58,22 @@ The catalog should feel like a compact operator dashboard, not a marketing page.
 
 - Dense rows, small headers, 1px borders, minimal vertical padding
 - Avoid large empty space, oversized hero text, and card-heavy layouts
-- Expanded provider rows can show compact subtables for free-entry paths, trials, referrals, affiliate links, coupons, bonuses, and stackability
+- Expanded provider rows can show compact subtables for free-entry paths, trials, referrals, affiliate links, coupons, and bonuses.
+- Current provider subtable columns are `Benefit`, `Plan`, `User gets`, `Claim`, and `Term`.
+- `Benefit` and `Plan` cells may include the small square quick-link icon. Do not put quick links in `User gets`.
 - Main row should stay scan-first: provider, short info, signals, status, and expand affordance
 - Use the existing `cb-*` styles in `app/globals.css` before creating new patterns
 
-Recent UI issue fixed locally:
+Recent UI updates:
 
 - Providers such as LambdaTest can have `free_tier=yes` but no dedicated plan rows from `/api/providers/[slug]`.
 - The expanded free-entry subtable now renders a provider-level free-entry row when plan rows are empty or incomplete.
 - It suppresses that fallback row when a matching free plan/trial row already exists, to avoid duplicated `Free tier` lines.
-- The `What it means` column has been widened and allowed to wrap so summaries are not clipped while other columns have spare room.
+- The old `Offer`, `Stack`, and `Action` columns were removed from the expanded subtables.
+- `Offer` was replaced by `Claim`, and `User gets` now appears before `Claim`.
+- `Window` was renamed to `Term`.
+- The category sidebar font sizes were reduced by 1px.
+- The main catalog hero headline (`Free-entry developer tools`) was reduced by half so it uses less vertical space.
 
 ## Data State
 
@@ -109,14 +116,9 @@ Do not collapse these into one vague field:
 - Trial: temporary access window
 - Free tier: ongoing free plan
 
-Expanded rows should put the user benefit first, then referrer/submitter benefit second. Stacking should be explicit:
+Expanded rows should put the user benefit first, then referrer/submitter benefit second.
 
-- `yes`
-- `no`
-- `unknown`
-- `maybe`
-
-Never infer that an affiliate link and referral code stack unless the provider terms confirm it.
+The public catalog subtable does not currently show a `Stack` column. If stackability is surfaced later, never infer that an affiliate link and referral code stack unless the provider terms confirm it.
 
 ## Security And Auth
 
@@ -144,6 +146,7 @@ Main branch is the deploy branch.
 
 Recent known commits:
 
+- `d512259` - `docs: add project handoff`
 - `22bcdce` - `fix: unblock netlify build for disabled provider pages`
 - `9e22ebd` - `feat: publish catalog and referral updates`
 - `3dac95b` - `fix: enable supabase email confirmations`
@@ -157,27 +160,55 @@ npm run lint
 npm run build
 ```
 
-## Current Local Work
+## Current Local Work To Commit
 
-At the time this handoff was created, local changes included:
+At the time this handoff was updated, local changes included:
 
-- `components/provider-catalog.tsx`: provider-level free-entry fallback row in expanded subtables
-- `app/globals.css`: expanded subtable column width and wrapping adjustments
-- `handoff.md`: this file
+- `components/provider-catalog.tsx`: expanded subtable shape changed to `Benefit / Plan / User gets / Claim / Term`; quick-link icons moved into `Benefit` and `Plan` cells only; demo benefit rows updated to the same ordering.
+- `app/globals.css`: subtable column widths and quick-link styles; category sidebar fonts reduced; main catalog headline reduced by half.
+- `mcp/referiate-provider-server.mjs`: chat/MCP output now uses neutral `Providers found` language, links to the public catalog page instead of the API endpoint, and avoids `Best fit` / `I would start with...` phrasing.
+- `plugins/nullcost-catalog/skills/*`: plugin skill instructions updated to present provider lists neutrally and avoid winner language unless the user explicitly asks for a decision.
+- `plugins/nullcost-catalog/.codex-plugin/plugin.json` and `.claude-plugin/plugin.json`: metadata now emphasizes plugin-first discovery and neutral provider lists.
+- `app/install/page.tsx`, `app/install/page.module.css`, `README.md`, and `plugins/nullcost-catalog/README.md`: Codex install path is explicitly plugin-first; raw MCP is framed as fallback/compatibility.
+- `handoff.md`: this file.
 
 These should be committed and pushed with this handoff.
+
+Local-only environment note:
+
+- `.env.local` was created locally with the hosted Supabase URL and publishable key so the local app can read the live catalog.
+- `.env.local` is ignored by git and must not be committed.
+- No service-role key was added locally, so server-side dashboard/router operations that require `SUPABASE_SERVICE_ROLE_KEY` still need that value if they must be tested locally.
+
+Verification run for this local work:
+
+```bash
+node --check mcp/referiate-provider-server.mjs
+npm run lint -- --quiet
+npm run build
+```
+
+MCP probe examples were run against `http://127.0.0.1:3001` and confirmed neutral output such as:
+
+```text
+Providers found: Nullcost catalog matches for "Postgres for a small Next.js SaaS"
+Catalog: Browse Nullcost
+```
 
 ## Next Useful Work
 
 1. Recheck the deployed Netlify run after the next push.
-2. Visually inspect expanded rows for providers with and without plan rows:
+2. Pull on desktop and confirm the Codex plugin install path is obvious on `/install`.
+3. Restart/toggle the Nullcost plugin/MCP client after pulling so stale MCP server processes do not keep old prompt/output text.
+4. Visually inspect expanded rows for providers with and without plan rows:
    - `lambdatest`
    - `browserless`
    - `vercel`
    - `supabase`
-3. Continue filling plan rows for high-intent public providers so fewer rows rely on provider-level fallback notes.
-4. Run smoke tests against the deployed production URL, not just local dev.
-5. Keep improving referral/affiliate/coupon metadata, but avoid widening the main table.
+5. Continue filling plan rows for high-intent public providers so fewer rows rely on provider-level fallback notes.
+6. Tighten MCP ranking for prompts that say `real free tier`: trial-only providers can still appear high in some categories and should be demoted or excluded when the request explicitly wants an ongoing free tier.
+7. Run smoke tests against the deployed production URL, not just local dev.
+8. Keep improving referral/affiliate/coupon metadata, but avoid widening the main table.
 
 ## Warnings For The Next LLM
 
@@ -185,4 +216,6 @@ These should be committed and pushed with this handoff.
 - Do not re-enable `/providers/[slug]` public pages without an explicit user request.
 - Do not replace the dense catalog layout with a marketing/landing-page layout.
 - Do not add live web search to default MCP recommendations.
+- Do not let plugin/MCP answers sound like endorsements by default. Use neutral provider-list language.
+- If testing plugin/MCP wording locally, kill/restart stale `run-provider-server.mjs` processes or restart the client after pulling.
 - Do not assume pricing data is perfectly complete. The catalog is useful, but some public rows still rely on provider-level metadata instead of curated plan rows.

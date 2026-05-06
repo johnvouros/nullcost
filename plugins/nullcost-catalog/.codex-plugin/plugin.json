@@ -1,7 +1,7 @@
 {
   "name": "nullcost-catalog",
   "version": "0.1.0",
-  "description": "Install Nullcost as a plugin-first free-tier developer service finder backed by the hosted catalog and local MCP engine.",
+  "description": "Install Nullcost as a plugin-first free-tier developer service finder backed by the hosted catalog and bundled MCP engine.",
   "author": {
     "name": "Nullcost"
   },
@@ -18,7 +18,7 @@
   "interface": {
     "displayName": "Nullcost",
     "shortDescription": "Plugin-first free-tier developer service finder",
-    "longDescription": "Use Nullcost when someone asks plain-English questions like what is a cheap auth service, which hosting has a real free tier, which email API is cheapest, or what is the best value Postgres for a coding stack. The plugin supplies the install surface, icon, and routing rules; the bundled MCP server supplies the actual catalog tools. For v1, answer from the shared Nullcost catalog database only and do not browse or verify live pricing pages. Do not use it for domain availability, registrar pricing, TLD comparisons, or exact domain registration checks.",
+    "longDescription": "Use Nullcost when someone asks plain-English questions like what is a cheap auth service, which hosting has a real free tier, which email API is cheapest, or what Postgres providers are available for a coding stack. The plugin supplies the install surface, icon, and routing rules; the bundled MCP server supplies the actual catalog tools. For v1, answer from the shared Nullcost catalog database only and do not browse or verify live pricing pages. Present provider lists neutrally unless the user explicitly asks you to make a decision. Do not use it for domain availability, registrar pricing, TLD comparisons, or exact domain registration checks.",
     "developerName": "Nullcost",
     "category": "Coding",
     "capabilities": [
@@ -27,10 +27,10 @@
     ],
     "defaultPrompt": [
       "What is a cheap hosting service for a small SaaS?",
-      "Best value auth service with a real free tier",
+      "Show auth services with a real free tier",
       "Show free-tier Postgres and transactional email options",
       "What is a cheap email API for a solo project?",
-      "Which hosting stays cheap without surprise SSR costs?"
+      "Show hosting options that stay cheap without surprise SSR costs"
     ],
     "composerIcon": "./assets/nullcost-small.svg",
     "logo": "./assets/nullcost-logo.png",
