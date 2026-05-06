@@ -2286,27 +2286,27 @@ body::before {
 
 .cb-benefit-subtable--provider th:nth-child(2),
 .cb-benefit-subtable--provider td:nth-child(2) {
-  width: 120px;
+  width: 104px;
 }
 
 .cb-benefit-subtable--provider th:nth-child(3),
 .cb-benefit-subtable--provider td:nth-child(3) {
-  width: 130px;
+  width: 300px;
 }
 
 .cb-benefit-subtable--provider th:nth-child(4),
 .cb-benefit-subtable--provider td:nth-child(4) {
-  width: 150px;
+  width: 120px;
 }
 
 .cb-benefit-subtable--provider th:nth-child(5),
 .cb-benefit-subtable--provider td:nth-child(5) {
-  width: 94px;
+  width: 112px;
 }
 
 .cb-benefit-subtable--provider th:nth-child(6),
 .cb-benefit-subtable--provider td:nth-child(6) {
-  width: 104px;
+  width: 112px;
 }
 
 .cb-offer-cell {
@@ -2379,6 +2379,16 @@ body::before {
 .cb-benefit-subtable th:nth-child(2),
 .cb-benefit-subtable td:nth-child(2) {
   width: 110px;
+}
+
+.cb-benefit-subtable th:nth-child(3),
+.cb-benefit-subtable td:nth-child(3) {
+  white-space: normal;
+}
+
+.cb-benefit-subtable--provider th:nth-child(3),
+.cb-benefit-subtable--provider td:nth-child(3) {
+  white-space: normal;
 }
 
 .cb-benefit-subtable th:nth-child(4),

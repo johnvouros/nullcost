@@ -416,6 +416,10 @@ function getPlanActionUrl(provider: ProviderRow, plan: ProviderPlanRow): string 
   return normalize(plan.official_url) || normalize(plan.source_url) || normalize(provider.signup_url) || normalize(provider.website);
 }
 
+function getProviderActionUrl(provider: ProviderRow): string {
+  return normalize(provider.signup_url) || normalize(provider.pricing_url) || normalize(provider.website) || normalize(provider.docs_url);
+}
+
 function getProviderSignals(provider: ProviderRow) {
   const icons: Array<{ kind: SignalKind; label: string }> = [];
 
@@ -869,15 +873,25 @@ function ProviderExpandedRow({
   const bestStartingPlan = detail?.bestStartingPlan ?? null;
   const planRows = plans.slice(0, 5);
   const extraPlanCount = Math.max(0, plans.length - planRows.length);
+  const providerActionUrl = getProviderActionUrl(provider);
+  const providerEntryKind: SignalKind = isYes(provider.free_tier)
+    ? 'free-tier'
+    : isYes(provider.free_trial)
+      ? 'free-trial'
+      : 'unknown';
+  const providerEntryLabel = getFreeEntryLabel(provider);
+  const providerEntryNote = getFreeEntrySummary(provider, bestStartingPlan ?? undefined);
+  const providerHasMatchingFreePlan = plans.some((plan) => plan.plan_type === 'free' || plan.trial_available);
+  const showProviderEntryRow = providerEntryLabel !== 'No free entry' && !providerHasMatchingFreePlan;
 
   return (
     <tr className="cb-expanded-row">
       <td colSpan={6}>
         <div className="cb-expanded">
-          {plans.length > 0 ? (
+          {showProviderEntryRow || plans.length > 0 ? (
             <div className="cb-expanded__benefit-stack">
               <div className="cb-expanded__benefit-title cb-expanded__benefit-title--provider">
-                <strong>{plans.length > 1 ? 'Multiple free-entry paths' : 'Free-entry path'}</strong>
+                <strong>{plans.length > 1 || showProviderEntryRow ? 'Free-entry path' : 'Free-entry path'}</strong>
                 {bestStartingPlan ? (
                   <span title={`Best start: ${bestStartingPlan.name} · ${getPlanPriceText(bestStartingPlan)}`}>
                     Best start: {bestStartingPlan.name} · {getPlanPriceText(bestStartingPlan)}
@@ -895,6 +909,25 @@ function ProviderExpandedRow({
                   </tr>
                 </thead>
                 <tbody>
+                  {showProviderEntryRow ? (
+                    <tr className="cb-benefit-subtable__best">
+                      <td>
+                        <SignalTextBadge kind={providerEntryKind} label={providerEntryLabel} />
+                      </td>
+                      <td>{bestStartingPlan?.name || 'Provider entry'}</td>
+                      <td>{providerEntryNote}</td>
+                      <td>{isYes(provider.free_tier) ? 'Free forever' : isYes(provider.free_trial) ? 'Trial' : 'Unknown'}</td>
+                      <td>
+                        {providerActionUrl ? (
+                          <a href={providerActionUrl} target="_blank" rel="nofollow noopener noreferrer">
+                            {providerEntryLabel === 'Free tier' ? 'Open free tier' : 'Open trial'}
+                          </a>
+                        ) : (
+                          <span className="cb-muted">No link</span>
+                        )}
+                      </td>
+                    </tr>
+                  ) : null}
                   {planRows.map((plan) => {
                     const actionUrl = getPlanActionUrl(provider, plan);
                     const isBestPlan = Boolean(bestStartingPlan && bestStartingPlan.id === plan.id);
